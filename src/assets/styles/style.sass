@@ -1,0 +1,38 @@
+@import './variables'
+
+.ms-2
+    margin-left: .3rem
+
+.w-80
+    width: 80% !important
+
+.fade-enter-active, .fade-leave-active
+    transition: all 0.5s ease-in-out
+
+.fade-enter-from, .fade-leave-to
+    opacity: 0
+
+.swap-move, .swap-enter-active, .swap-leave-active
+    transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1)
+
+.swap-enter-from, .swap-leave-to
+    opacity: 0
+    transform: scaleY(0)
+
+.swap-leave-active
+    z-index: -1
+    position: absolute
+
+::-webkit-scrollbar
+    width: .5rem
+
+::-webkit-scrollbar-track
+    background-color: var(--secondary-background-color)
+    border-radius: var(--border-radius)
+
+::-webkit-scrollbar-thumb
+    background-color: #57265c
+    border-radius: var(--border-radius)
+
+::-webkit-scrollbar-thumb:hover
+    background-color: #682d6e
