@@ -89,12 +89,27 @@ export default createStore({
         }).then(resolve)
       })
     },
+    createPassPhrase({ dispatch }, passPhrase) {
+      return new Promise((resolve) => {
+        dispatch("dispatchEvent", {
+          eventName: "create-passphrase",
+          params: { passPhrase },
+        }).then(resolve)
+      })
+    },
     retrieveLogin({ commit, dispatch, getters }) {
       dispatch("dispatchEvent", {
         eventName: "read-login",
         params: { loginId: getters.getActiveLogin },
       }).then((plainPassword) => {
         commit("updateActiveLoginPassword", plainPassword)
+      })
+    },
+    validateInstalltion({ dispatch }) {
+      return new Promise((resolve) => {
+        dispatch("dispatchEvent", {
+          eventName: "validate-installation",
+        }).then(resolve)
       })
     },
     retrieveLogins({ commit, dispatch }) {
