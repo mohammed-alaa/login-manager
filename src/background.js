@@ -20,11 +20,12 @@ import {
   deleteLogin,
   updateLogin,
   decryptPassword,
+  validateInstallation,
+  createPassPhrase,
 } from "@/utils/backend"
 
 const isDevelopment = process.env.NODE_ENV !== "production"
 
-// Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
   { scheme: "app", privileges: { secure: true, standard: true } },
 ])
@@ -51,6 +52,8 @@ async function createWindow() {
       defaultEncoding: "UTF-8",
     },
   })
+
+  validateInstallation(getAppDataPath())
 
   tray = new Tray(nativeImage.createFromPath(iconPath))
   tray.setTitle(mainWindow.getTitle())
@@ -132,27 +135,18 @@ async function createWindow() {
   })
 }
 
-// Quit when all windows are closed.
 app.on("window-all-closed", () => {
-  // On macOS it is common for applications and their menu bar
-  // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== "darwin") {
     app.quit()
   }
 })
 
 app.on("activate", () => {
-  // On macOS it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
   if (mainWindow === null) createWindow()
 })
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
 app.on("ready", async () => {
   if (isDevelopment && !process.env.IS_TEST) {
-    // Install Vue Devtools
     try {
       await installExtension(VUEJS3_DEVTOOLS)
     } catch (e) {
@@ -169,7 +163,6 @@ app.on("ready", async () => {
   createWindow()
 })
 
-// Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {
   if (process.platform === "win32") {
     process.on("message", (data) => {
@@ -201,12 +194,25 @@ ipcMain.on("maximize-application", () => {
   mainWindow.isMaximized() ? mainWindow.restore() : mainWindow.maximize()
 })
 
+ipcMain.handle("validate-installation", () => {
+  return process.appSettings.loaded
+})
+
+ipcMain.handle("retrieve-settings", () => {
+  return process.appSettings
+})
+
 ipcMain.handle("validate-passphrase", (event, { passPhrase }) => {
   const validationResult = validatePassPhrase(passPhrase)
   if (validatePassPhrase) {
     process.env.decryptionKey = passPhrase
   }
   return validationResult
+})
+
+ipcMain.handle("create-passphrase", (event, { passPhrase }) => {
+  createPassPhrase(getAppDataPath(), passPhrase)
+  return null
 })
 
 ipcMain.handle("read-logins", () => {

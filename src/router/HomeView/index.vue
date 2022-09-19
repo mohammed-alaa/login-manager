@@ -1,9 +1,9 @@
 <template>
-	<div class="login-view">
-		<LoginList />
-		<LoginHeader />
-		<LoginBody />
-	</div>
+    <div class="login-view">
+        <LoginList />
+        <LoginHeader />
+        <LoginBody />
+    </div>
 </template>
 
 <script setup>
