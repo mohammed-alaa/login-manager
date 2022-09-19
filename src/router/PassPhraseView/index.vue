@@ -26,7 +26,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import FormInput from '@/components/FormInput'
@@ -48,6 +48,13 @@ const formSubmit = async () => {
     isMasterPasswordError.value = validPassPhrase
     validPassPhrase && setTimeout(() => router.replace({ name: "home" }), 1000)
 }
+
+onMounted(async () => {
+    const installationValidationResult = await store.dispatch('validateInstalltion')
+    if (!installationValidationResult) {
+        router.replace({ name: "install" })
+    }
+})
 </script>
 
 <style scoped lang="sass">
