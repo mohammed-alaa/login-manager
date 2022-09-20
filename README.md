@@ -8,11 +8,6 @@ Install NPM modules
 npm install
 ```
 
-Go to src/utils/backend.js and update the pass phrase with a bcrypt hashed phrase
-```js
-const hashedPassPhrase = ""
-```
-
 ### Compiles and hot-reloads for development
 ```
 npm run electron:serve
