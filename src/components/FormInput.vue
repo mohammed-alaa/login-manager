@@ -5,7 +5,7 @@
                 {{ label }}
             </slot>
         </label>
-        <input :class="`form-control form-control-${size} ${readonly ? 'form-control-plaintext' : ''}`" :type="type"
+        <input class="form-control" :class="[`form-control-${size}`, {'form-control-plaintext': readonly}]" :type="type"
             :id="id" :value="modelValue" :placeholder="placeholder"
             @input="$emit('update:modelValue', $event.target.value)" @focus="$emit('focus', $event)"
             :readonly="readonly" />
