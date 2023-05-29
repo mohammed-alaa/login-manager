@@ -6,15 +6,15 @@
             </span>
         </div>
         <div class="actions">
-            <AppButton type="button" size="sm" theme="outline-light" @click="minApplication" class="action-button"
+            <AppButton size="sm" theme="outline-light" @click="minApplication" class="action-button"
                 noPadding noBorderRadius>
                 <AppIcon icon="dash" />
             </AppButton>
-            <AppButton type="button" size="sm" theme="outline-light" @click="maxApplication" class="action-button"
+            <AppButton size="sm" theme="outline-light" @click="maxApplication" class="action-button"
                 noPadding noBorderRadius>
                 <AppIcon icon="square" />
             </AppButton>
-            <AppButton type="button" size="sm" theme="outline-danger" @click="closeApplication" class="action-button"
+            <AppButton size="sm" theme="outline-danger" @click="closeApplication" class="action-button"
                 noPadding noBorderRadius>
                 <AppIcon icon="x" />
             </AppButton>
@@ -52,6 +52,7 @@ const closeApplication = () => store.dispatch('exitApplication')
         line-height: 1.6rem
         text-align: center
         color: var(--color-white)
+        user-select: none
 
     .actions .action-button
         margin: auto .15rem !important
