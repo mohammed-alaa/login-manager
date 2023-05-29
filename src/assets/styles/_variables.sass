@@ -13,36 +13,38 @@ $color-gray: #ccc
 // Widths and Offsets
 $main-start-offset: 1rem
 $secondary-start-offset: 2rem
-$login-list-width: 300px
+$login-list-width: 350px
 $app-header-min-height: 2.5rem
 $login-header-min-height: 4.4rem
 $search-flex-gain: .22
+$search-height: 5rem
 
 :root
-    // Background
-    --main-background-color: #{$main-background-color}
-    --secondary-background-color: #{$secondary-background-color}
+	// Background
+	--main-background-color: #{$main-background-color}
+	--secondary-background-color: #{$secondary-background-color}
 
-    // Border
-    --main-border-color: #{$main-border-color}
-    --border-radius: #{$border-radius}
+	// Border
+	--main-border-color: #{$main-border-color}
+	--border-radius: #{$border-radius}
 
-    // Color
-    --color-white: #{$color-white}
-    --color-gray: #{$color-gray}
+	// Color
+	--color-white: #{$color-white}
+	--color-gray: #{$color-gray}
 
-    // Widths and offsets
-    --main-start-offset: #{$main-start-offset}
-    --secondary-start-offset: #{$secondary-start-offset}
-    --login-list-width: #{$login-list-width}
-    --app-header-min-height: #{$app-header-min-height}
-    --search-flex-gain: #{$search-flex-gain}
-    --login-header-min-height: #{$login-header-min-height}
+	// Widths and offsets
+	--main-start-offset: #{$main-start-offset}
+	--secondary-start-offset: #{$secondary-start-offset}
+	--login-list-width: #{$login-list-width}
+	--app-header-min-height: #{$app-header-min-height}
+	--search-flex-gain: #{$search-flex-gain}
+	--login-header-min-height: #{$login-header-min-height}
+	--search-height: #{$search-height}
 
 @media screen and (max-width: 1430px)
-    :root
-        --search-flex-gain: calc(#{$search-flex-gain} + 0.07)
+	:root
+		--search-flex-gain: calc(#{$search-flex-gain} + 0.07)
 
 @media screen and (max-width: 1200px)
-    :root
-        --search-flex-gain: calc(#{$search-flex-gain} + 0.1)
+	:root
+		--search-flex-gain: calc(#{$search-flex-gain} + 0.1)
