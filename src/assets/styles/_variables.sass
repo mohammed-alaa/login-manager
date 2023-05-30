@@ -10,13 +10,16 @@ $border-radius: 2rem
 $color-white: #fff
 $color-gray: #ccc
 
-// Widths and Offsets
+// Offsets
 $main-start-offset: 1rem
 $secondary-start-offset: 2rem
+
+// Widths
 $login-list-width: 350px
-$app-header-min-height: 2.5rem
+
+// Heights
+$app-header-min-height: 3rem
 $login-header-min-height: 4.4rem
-$search-flex-gain: .22
 $search-height: 5rem
 
 :root
@@ -32,19 +35,14 @@ $search-height: 5rem
 	--color-white: #{$color-white}
 	--color-gray: #{$color-gray}
 
-	// Widths and offsets
+	// Offsets
 	--main-start-offset: #{$main-start-offset}
 	--secondary-start-offset: #{$secondary-start-offset}
+
+	// Widths
 	--login-list-width: #{$login-list-width}
+
+	// Heights
 	--app-header-min-height: #{$app-header-min-height}
-	--search-flex-gain: #{$search-flex-gain}
 	--login-header-min-height: #{$login-header-min-height}
 	--search-height: #{$search-height}
-
-@media screen and (max-width: 1430px)
-	:root
-		--search-flex-gain: calc(#{$search-flex-gain} + 0.07)
-
-@media screen and (max-width: 1200px)
-	:root
-		--search-flex-gain: calc(#{$search-flex-gain} + 0.1)
