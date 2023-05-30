@@ -1,14 +1,14 @@
 <template>
-    <li :class="`login-item ${isActive ? 'active' : ''}`" @click.prevent="$emit('click')">
-        <div class="website">
-            <AppIcon icon="globe" />
-            <span class="ms-1" v-text="getWebsiteAddressName" />
-        </div>
-        <div class="username">
-            <AppIcon icon="person" />
-            <span class="ms-1" v-text="getUsername" />
-        </div>
-    </li>
+	<div class="login-item position-relative" :class="{ 'active': isActive, }" @click.prevent="$emit('click')">
+		<div class="website text-truncate">
+			<AppIcon :icon="`${isActive ? 'envelope-open-fill' : 'envelope-fill'}`" />
+			<span class="ms-1" v-text="getWebsiteAddressName" />
+		</div>
+		<div class="username text-truncate">
+			<AppIcon :icon="`person${isActive ? '-fill' : ''}`" />
+			<span class="ms-1" v-text="getUsername" />
+		</div>
+	</div>
 </template>
 
 <script setup>
@@ -18,16 +18,16 @@ import AppIcon from '@/components/AppIcon'
 
 defineEmits(['click'])
 const props = defineProps({
-    login: {
-        type: [Object, null],
-        required: false,
-        default: null,
-    },
-    isActive: {
-        type: Boolean,
-        required: false,
-        default: false,
-    },
+	login: {
+		type: [Object, null],
+		required: false,
+		default: null,
+	},
+	isActive: {
+		type: Boolean,
+		required: false,
+		default: false,
+	},
 })
 
 const getWebsiteAddressName = computed(() => getWebsiteName(props.login.website))
@@ -43,10 +43,9 @@ $item-active-color: #f9f9f9
 .login-item
     padding: 1rem 1.2rem
     cursor: pointer
-    position: relative
     background-color: var(--main-background-color)
     border-block: 1px solid var(--main-border-color)
-    transition: all .3s ease-in-out
+    transition: all 200ms ease-in-out
     &::before
         content: ''
         position: absolute
@@ -66,8 +65,5 @@ $item-active-color: #f9f9f9
         background-color: #{$item-active-border-color}
     .website, .username
         color: var(--color-gray)
-        overflow: hidden
-        white-space: nowrap
-        text-overflow: ellipsis
-        transition: all .3s ease-in-out
+        transition: all 200ms ease-in-out
 </style>

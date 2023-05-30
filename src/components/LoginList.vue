@@ -2,21 +2,17 @@
 	<div class="login-list">
 		<transition-group name="swap">
 			<template v-if="computedFilteredLogins.length">
-				<ol class="list-unstyled m-0 login-list-listbox">
-					<transition-group name="fade" :key="6">
-						<LoginItem v-for="(login) in filteredLogins()" :key="login.id" :is-active="isLoginActive(login.id)"
-							@click="activeLoginChange(login.id)" :login="login" />
-					</transition-group>
-				</ol>
+				<LoginItem v-for="(login) in filteredLogins()" :key="login.id" :is-active="isLoginActive(login.id)"
+					@click="activeLoginChange(login.id)" :login="login" />
 			</template>
 			<template v-else>
 				<div class="empty-logins-list h-100 d-flex flex-column align-items-center justify-content-center">
 					<div class="text-white">
 						No logins found
 					</div>
-					<div class="body">
+					<p class="body mb-0">
 						There are no results matching your search.
-					</div>
+					</p>
 				</div>
 			</template>
 		</transition-group>
@@ -42,7 +38,6 @@ const activeLoginChange = (loginId) => store.dispatch('activeLoginChange', login
 </script>
 
 <style lang="sass" scoped>
-$login-list-top-offset: calc(var(--app-header-min-height) + var(--login-header-min-height) + 2px)
 .login-list
 	grid-area: list
 	background-color: var(--main-background-color)
@@ -50,8 +45,8 @@ $login-list-top-offset: calc(var(--app-header-min-height) + var(--login-header-m
 	overflow: hidden auto !important
 
 	.empty-logins-list
-		padding: 2rem
+		font-size: 2.25rem
 		.body
-			font-size: .9rem
+			font-size: 1.05rem
 			color: var(--color-gray)
 </style>
