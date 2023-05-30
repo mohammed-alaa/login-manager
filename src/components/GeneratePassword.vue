@@ -1,6 +1,6 @@
 <template>
-    <div class="generate-password">
-        <FormInput type="text" id="generatedPassword" nolabel v-model="generatedPassword" size="normal" class="w-80"
+    <div class="d-flex flex-row align-items-center gap-2 pt-4">
+        <FormInput type="text" id="generatedPassword" nolabel v-model="generatedPassword"
             readonly nomargins @focus="autoSelectGeneratedPassword" />
         <AppButton type="button" size="normal" theme="outline-info" @click="generatePassword" class="mx-3">
             <AppIcon icon="shuffle" />
@@ -29,9 +29,4 @@ const generatePassword = () => {
 </script>
 
 <style scoped lang="sass">
-.generate-password
-    display: flex
-    flex-direction: row
-    align-items: center
-    margin-top: 1rem
 </style>

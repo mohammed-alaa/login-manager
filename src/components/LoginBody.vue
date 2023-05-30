@@ -2,64 +2,76 @@
 	<div class="login-body d-flex flex-column gap-4">
 		<LoginBodyActions />
 		<transition-group name="swap">
-			<div class="website" :key="0" v-if="isEditing || isCreating">
-				<div class="head">
-					<AppIcon icon="globe" type="regular" />
-					<span class="ms-2">Website</span>
+			<template v-if="isEditing || isCreating">
+				<div class="website" :key="0">
+					<div class="head">
+						<AppIcon icon="globe" type="regular" />
+						<span class="ms-2">Website</span>
+					</div>
+					<div class="rest d-flex flex-row justify-content-between align-items-center" :key="11">
+						<FormInput type="text" id="website" nolabel nomargins v-model="loginPlaceholder.website" />
+					</div>
 				</div>
-				<div class="rest d-flex flex-row justify-content-between align-items-center" :key="11">
-					<FormInput type="text" id="website" nolabel nomargins v-model="loginPlaceholder.website"
-						size="normal" />
-				</div>
-			</div>
+			</template>
 			<div class="username" :key="1">
 				<div class="head">
 					<AppIcon icon="person-circle" type="regular" />
 					<span class="ms-2">Username</span>
 				</div>
-				<div class="rest d-flex flex-row justify-content-between align-items-center" v-if="isViewing || isDeleting" :key="12">
-					<span class="value overflow-hidden" v-text="getLoginUsername" />
-					<AppButtonCopy :value="getLoginUsername" />
-				</div>
-				<div class="rest d-flex flex-row justify-content-between align-items-center" v-else-if="isEditing || isCreating" :key="13">
-					<FormInput type="text" id="website" nolabel nomargins v-model="loginPlaceholder.username"
-						size="normal" />
-				</div>
+				<template v-if="isViewing || isDeleting">
+					<div class="rest d-flex flex-row justify-content-between align-items-center" :key="12">
+						<span class="text-white text-truncate" v-text="getLoginUsername" />
+						<AppButtonCopy :value="getLoginUsername" />
+					</div>
+				</template>
+				<template v-else-if="isEditing || isCreating">
+					<div class="rest d-flex flex-row justify-content-between align-items-center" :key="13">
+						<FormInput type="text" id="website" nolabel nomargins v-model="loginPlaceholder.username" />
+					</div>
+				</template>
 			</div>
 			<div class="password" :key="3">
 				<div class="head">
 					<AppIcon icon="lock" type="regular" />
 					<span class="ms-2 me-2">Password</span>
-					<AppButton class="show-password" type="button" size="sm"
-						:theme="`${isPasswordVisible ? 'danger' : 'outline-warning'}`"
-						@click="isPasswordVisible = !isPasswordVisible" v-if="isViewing || isDeleting" :key="7">
-						<AppIcon :icon="`${isPasswordVisible ? 'eye-slash' : 'eye'}`" />
-					</AppButton>
+					<template v-if="isViewing || isDeleting">
+						<AppButton class="show-password" size="sm"
+							:theme="`${isPasswordVisible ? 'danger' : 'outline-warning'}`"
+							@click="isPasswordVisible = !isPasswordVisible" :key="7">
+							<AppIcon :icon="`${isPasswordVisible ? 'eye-slash-fill' : 'eye-fill'}`" />
+						</AppButton>
+					</template>
 				</div>
-				<div class="rest d-flex flex-row justify-content-between align-items-center" v-if="isViewing || isDeleting" :key="8">
-					<span class="value overflow-hidden" v-text="togglablePassword" />
-					<AppButtonCopy :value="getLoginPassword" />
-				</div>
-				<div v-else-if="isEditing || isCreating" :key="9">
-					<div class="rest d-flex flex-row justify-content-between align-items-center">
-						<FormInput type="text" id="website" nolabel nomargins v-model="loginPlaceholder.password"
-							size="normal" />
+				<template v-if="isViewing || isDeleting">
+					<div class="rest d-flex flex-row justify-content-between align-items-center" :key="8">
+						<span class="text-white text-truncate" v-text="togglablePassword" />
+						<AppButtonCopy :value="getLoginPassword" />
 					</div>
-					<GeneratePassword />
-				</div>
+				</template>
+				<template v-else-if="isEditing || isCreating">
+					<div :key="9">
+						<div class="rest d-flex flex-row justify-content-between align-items-center">
+							<FormInput type="text" id="website" nolabel nomargins v-model="loginPlaceholder.password" />
+						</div>
+						<GeneratePassword />
+					</div>
+				</template>
 			</div>
-			<AppButton class="submit-buttons" type="button" size="normal" theme="success" @click="createLoginSubmit"
-				v-if="isCreating" :key="4">
-				<AppIcon icon="plus-lg" />
-				<span class="ms-1">Create</span>
-			</AppButton>
-			<AppButton class="submit-buttons" type="button" size="normal" theme="success" @click="editLoginSubmit"
-				v-else-if="isEditing" :key="5">
-				<AppIcon icon="pencil" />
-				<span class="ms-1">Update</span>
-			</AppButton>
-			<DeleteConfirmation v-else-if="isDeleting" :key="7" @confirmDeleting="confirmDeletion"
-				@cancelDeleting="cancelDeleting" />
+			<template v-if="isCreating">
+				<AppButton theme="success" @click="createLoginSubmit" :key="4">
+					<AppIcon icon="plus-lg" />
+					<span class="ms-1">Create</span>
+				</AppButton>
+			</template>
+			<template v-else-if="isEditing">
+				<AppButton theme="success" @click="editLoginSubmit" :key="5">
+					<AppIcon icon="pencil-fill" />
+					<span class="ms-1">Update</span>
+				</AppButton>
+			</template>
+			<template v-else-if="isDeleting">
+				<DeleteConfirmation :key="7" @confirmDeleting="confirmDeletion" @cancelDeleting="cancelDeleting" />
+			</template>
 		</transition-group>
 	</div>
 </template>
@@ -158,12 +170,7 @@ onUnmounted(() => {
 			color: var(--color-gray)
 			margin-bottom: 0.5rem
 		.rest
-			width: 80%
-			.value
-				width: 70%
-				text-overflow: ellipsis
-				font-size: 1.4rem
-				color: var(--color-white)
+			font-size: 1.4rem
 
 	.website .head > i
 		color: #2196f3
@@ -171,9 +178,4 @@ onUnmounted(() => {
 		color: #47cc47
 	.password .head > i
 		color: #bf772d
-
-	.submit-buttons
-		font-size: 1.1rem
-		margin: 2rem var(--secondary-start-offset) 0
-		padding-inline: var(--secondary-start-offset)
 </style>
