@@ -1,6 +1,6 @@
 <template>
 	<div class="search">
-		<FormInput v-model="searchLogin" type="text" id="searchElement" nolabel placeholder="Search logins" nomargins
+		<FormInput v-model="searchLogin" id="searchElement" nolabel placeholder="Search logins (/)" nomargins
 			size="normal" @keydown.esc="searchLogin = ''" />
 	</div>
 </template>
