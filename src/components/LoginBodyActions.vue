@@ -80,21 +80,21 @@ onUnmounted(() => document.removeEventListener('keydown', focusnewLogin))
 .body-actions
 	.website
 		font-size: 1.3rem
-		font-weight: light
+		font-weight: lighter
 		letter-spacing: 0.05rem
 		i, .website-href
 			transition: all 250ms ease-in-out
 		i
 			border-radius: 50%
-			border: 1px solid #69326f
-			background-color: #3e1c42b3
+			border: 1px solid #60688b
+			background-color: rgb(39 42 55 / 66%)
 		.website-href
-			border: 1px solid #3e1c42f5
+			border: 1px solid #60688bf5
 			border-radius: var(--border-radius)
-			color: #dfc7f3
+			color: #c2cdfc
 
 			&:hover
 				border-color: transparent
-				background-color: #3e1c42f5
+				background-color: rgb(39 42 55)
 				color: var(--color-white)
 </style>

@@ -53,7 +53,7 @@ onUnmounted(() => document.removeEventListener('keydown', focusnewLogin))
 .login-header
 	grid-area: info
 	border-bottom: 1px solid var(--main-border-color)
-	background-color: #191919
+	background-color: var(--main-background-color)
 	z-index: 1
 	padding-inline: var(--secondary-start-offset)
 </style>

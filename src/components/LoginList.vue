@@ -1,22 +1,22 @@
 <template>
-	<div class="login-list">
-		<transition-group name="swap">
-			<template v-if="computedFilteredLogins.length">
+	<transition-group name="swap">
+		<template v-if="computedFilteredLogins.length">
+			<div class="login-list d-flex flex-column gap-2 px-2 py-2">
 				<LoginItem v-for="(login) in filteredLogins()" :key="login.id" :is-active="isLoginActive(login.id)"
 					@click="activeLoginChange(login.id)" :login="login" />
-			</template>
-			<template v-else>
-				<div class="empty-logins-list h-100 d-flex flex-column align-items-center justify-content-center">
-					<div class="text-white">
-						No logins found
-					</div>
-					<p class="body mb-0">
-						There are no results matching your search.
-					</p>
+			</div>
+		</template>
+		<template v-else>
+			<div class="empty-logins-list h-100 d-flex flex-column align-items-center justify-content-center">
+				<div class="text-white">
+					No logins found
 				</div>
-			</template>
-		</transition-group>
-	</div>
+				<p class="body mb-0">
+					There are no results matching your search.
+				</p>
+			</div>
+		</template>
+	</transition-group>
 </template>
 
 <script setup>
@@ -44,9 +44,9 @@ const activeLoginChange = (loginId) => store.dispatch('activeLoginChange', login
 	border-right: 1px solid var(--main-border-color)
 	overflow: hidden auto !important
 
-	.empty-logins-list
-		font-size: 2.25rem
-		.body
-			font-size: 1.05rem
-			color: var(--color-gray)
+.empty-logins-list
+	font-size: 2.25rem
+	.body
+		font-size: 1.05rem
+		color: var(--color-gray)
 </style>
