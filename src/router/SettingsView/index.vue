@@ -1,46 +1,47 @@
 <template>
-    <div class="container text-white">
-        <section class="settings">
-            <div class="settings-header">
-                <div class="title">
-                    <h1>Settings</h1>
-                </div>
-                <div class="actions">
-                    Back
-                </div>
-            </div>
-            <div class="settings-body">
-                <h2 v-for="(_, index) in Array(18)" :key="index">Body</h2>
-            </div>
-        </section>
-    </div>
+	<section class="settings overflow-auto">
+		<div class="container text-white">
+			<div class="settings-header d-flex flex-row align-items-center justify-content-between position-sticky top-0">
+				<div class="title">
+					<h1 class="text-white">Settings</h1>
+				</div>
+				<div class="actions">
+					<AppButton @click="goToHomePage" theme="outline-warning" size="normal">
+						<AppIcon icon="lock-fill" />
+						<span>Home</span>
+					</AppButton>
+				</div>
+			</div>
+			<div class="settings-body">
+				<h2 v-for="(_, index) in Array(20)" :key="index">Body</h2>
+			</div>
+		</div>
+	</section>
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router'
+import AppIcon from '@/components/AppIcon'
+import AppButton from '@/components/AppButton'
+
+const router = useRouter()
+
+const goToHomePage = () => router.push({ name: 'home' })
 </script>
 
 <style scoped lang="sass">
 $settings-header: 5.5rem
 .settings
-    background-color: var(--secondary-background-color)
-    overflow: hidden
+	background-color: var(--secondary-background-color)
 
-.settings-header
-    display: flex
-    flex-direction: row
-    align-items: center
-    justify-content: space-between
-    padding: 0 var(--secondary-start-offset)
-    color: var(--color-white)
-    border-bottom: 1px solid var(--main-border-color)
-    border-right: 1px solid var(--main-border-color)
-    border-left: 1px solid var(--main-border-color)
-    background-color: var(--secondary-background-color)
-    position: sticky
-    top: 0
-    min-height: $settings-header
-.settings-body
-    padding: var(--secondary-start-offset)
-    overflow: hidden auto
-    height: calc(100vh - $settings-header - var(--app-header-min-height))
+	.settings-header
+		padding-inline: var(--secondary-start-offset)
+		border-block-end: 1px solid var(--main-border-color)
+		border-inline: 1px solid var(--main-border-color)
+		background-color: var(--main-background-color)
+		min-height: $settings-header
+	.settings-body
+		border-inline: 1px solid var(--main-border-color)
+		padding: var(--secondary-start-offset)
+		height: calc(100vh - $settings-header - var(--app-header-min-height))
 </style>
