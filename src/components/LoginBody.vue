@@ -15,7 +15,7 @@
 			</template>
 			<div class="username" :key="1">
 				<div class="head">
-					<AppIcon icon="person-circle" type="regular" />
+					<AppIcon icon="person-badge-fill" type="regular" />
 					<span class="ms-2">Username</span>
 				</div>
 				<template v-if="isViewing || isDeleting">
@@ -32,10 +32,10 @@
 			</div>
 			<div class="password" :key="3">
 				<div class="head">
-					<AppIcon icon="lock" type="regular" />
+					<AppIcon icon="lock-fill" type="regular" />
 					<span class="ms-2 me-2">Password</span>
 					<template v-if="isViewing || isDeleting">
-						<AppButton class="show-password" size="sm"
+						<AppButton class="show-password" size="normal"
 							:theme="`${isPasswordVisible ? 'danger' : 'outline-warning'}`"
 							@click="isPasswordVisible = !isPasswordVisible" :key="7">
 							<AppIcon :icon="`${isPasswordVisible ? 'eye-slash-fill' : 'eye-fill'}`" />
@@ -131,7 +131,7 @@ const updateModeOnEscape = (event) => {
 	}
 }
 
-watch(() => isEditing.value, (newValue) => {
+watch(isEditing, (newValue) => {
 	if (newValue) {
 		loginPlaceholder.value = {
 			website: getLoginWebsiteAddress.value,
@@ -140,7 +140,8 @@ watch(() => isEditing.value, (newValue) => {
 		}
 	}
 })
-watch(() => isCreating.value, (newValue) => {
+
+watch(isCreating, (newValue) => {
 	if (newValue) {
 		loginPlaceholder.value = {
 			website: "",
@@ -148,6 +149,10 @@ watch(() => isCreating.value, (newValue) => {
 			password: "",
 		}
 	}
+})
+
+watch(activeLoginId, () => {
+	isPasswordVisible.value = false
 })
 
 onMounted(() => {
