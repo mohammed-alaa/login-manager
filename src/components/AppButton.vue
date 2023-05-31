@@ -2,8 +2,8 @@
 	<transition name="fade" mode="out-in">
 		<button :key="0" class="btn"
 			:class="[`btn-${size} btn-${theme}`, { 'active': isActive, 'border': border, 'noborderradius': noBorderRadius, 'nopadding': noPadding }]"
-			:type="type" @click.prevent="$emit('click', $event)" :disabled="loading" :aria-disabled="loading"
-			:tabindex="`${loading ? '-1' : '0'}`">
+			:type="type" @click.prevent="$emit('click', $event)" :disabled="isButtonDisabled" :aria-disabled="isButtonDisabled"
+			:tabindex="`${isButtonDisabled ? -1 : 0}`">
 			<template v-if="loading">
 				<AppIcon icon="spinner-third fa-spin" :key="1" />
 			</template>
@@ -13,10 +13,10 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue'
+import { defineProps, defineEmits, computed } from 'vue'
 import AppIcon from '@/components/AppIcon'
 
-defineProps({
+const props = defineProps({
 	type: {
 		type: String,
 		required: false,
@@ -61,10 +61,17 @@ defineProps({
 		type: Boolean,
 		required: false,
 		default: false,
-	}
+	},
+	disabled: {
+		type: Boolean,
+		required: false,
+		default: false,
+	},
 })
 
 defineEmits(['click'])
+
+const isButtonDisabled = computed(() => props.disabled || props.loading)
 </script>
 
 <style scoped lang="sass">
@@ -72,6 +79,8 @@ defineEmits(['click'])
 	-webkit-app-region: no-drag
 	text-transform: uppercase
 	border: none
+	white-space: nowrap
+
 	&:disabled
 		pointer-events: auto
 		cursor: not-allowed
