@@ -13,7 +13,6 @@ import {
 } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import installExtension, { VUEJS3_DEVTOOLS } from "electron-devtools-installer";
-import AutoLaunch from "auto-launch";
 import {
 	validatePassPhrase,
 	readDBLogins,
@@ -167,40 +166,20 @@ app.on("ready", async () => {
 
 const createMainWindow = () => {
 	validateInstallation(getAppDataPath());
-	console.log("settings", process.appSettings);
-	// if (!isDevelopment) {
-	// app.setLoginItemSettings({
-	// 	openAtLogin: process.appSettings.startOnLogin,
-	// 	openAsHidden:
-	// 		process.appSettings.startOnLogin &&
-	// 		process.appSettings.startMinimized,
-	// 	enabled: process.appSettings.startOnLogin,
-	// 	name: "Login Manager",
-	// });
-	// }
-
-	const autoLaunch = new AutoLaunch({
-		name: "Login Manager",
-		path: app.getPath("exe"),
-		isHidden:
-			process.appSettings.startOnLogin &&
-			process.appSettings.startMinimized,
-	});
-
-	autoLaunch.isEnabled().then((isEnabled) => {
-		if (!isEnabled) autoLaunch.enable();
-	});
+	if (!isDevelopment) {
+		setAutoLaunch();
+	}
 
 	createWindow();
+};
 
-	// if (
-	// 	process.appSettings.startOnLogin &&
-	// 	process.appSettings.startMinimized
-	// ) {
-	// 	mainWindow.hide();
-	// } else {
-	// 	mainWindow.show();
-	// }
+const setAutoLaunch = () => {
+	app.setLoginItemSettings({
+		name: "Login Manager",
+		openAtLogin: process.appSettings.startOnLogin,
+		openAsHidden: process.appSettings.startMinimized,
+		executablePath: app.getPath("exe"),
+	});
 };
 
 if (isDevelopment) {
@@ -247,6 +226,7 @@ ipcMain.handle("retrieve-settings", () => {
 
 ipcMain.handle("update-settings", (event, { newAppSettings }) => {
 	updateSettings(getAppDataPath(), newAppSettings);
+	setAutoLaunch();
 	return null;
 });
 
