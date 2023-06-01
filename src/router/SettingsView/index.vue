@@ -27,8 +27,6 @@
 						<span class="ms-1">Update settings</span>
 					</AppButton>
 				</div>
-				<pre>{{ appSettings }}</pre>
-				{{ isLoading }}
 			</div>
 		</div>
 	</section>
