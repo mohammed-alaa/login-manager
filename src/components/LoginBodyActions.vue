@@ -1,5 +1,5 @@
 <template>
-	<div class="body-actions d-flex flex-row align-items-center justify-content-between gap-4">
+	<div class="body-actions d-flex flex-row align-items-center justify-content-between gap-4 flex-wrap">
 		<transition name="swap">
 			<template v-if="showWebsiteName">
 				<div class="website d-flex flex-row d-flex flex-row align-items-center gap-2 overflow-hidden">
