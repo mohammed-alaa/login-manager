@@ -1,25 +1,20 @@
 <template>
-    <header class="app-header">
-        <div class="title">
-            <span class="title-text">
-                Login Manager
-            </span>
-        </div>
-        <div class="actions">
-            <AppButton type="button" size="sm" theme="outline-light" @click="minApplication" class="action-button"
-                noPadding noBorderRadius>
-                <AppIcon icon="dash" />
-            </AppButton>
-            <AppButton type="button" size="sm" theme="outline-light" @click="maxApplication" class="action-button"
-                noPadding noBorderRadius>
-                <AppIcon icon="square" />
-            </AppButton>
-            <AppButton type="button" size="sm" theme="outline-danger" @click="closeApplication" class="action-button"
-                noPadding noBorderRadius>
-                <AppIcon icon="x" />
-            </AppButton>
-        </div>
-    </header>
+	<header class="app-header d-flex flex-row justify-content-between align-content-center">
+		<div class="title text-white fw-bold text-center my-auto">
+			<span>Login Manager</span>
+		</div>
+		<div class="d-flex flex-row gap-1 align-items-center me-1">
+			<AppButton size="normal" theme="outline-light" @click="minApplication" noPadding noBorderRadius>
+				<AppIcon icon="dash" />
+			</AppButton>
+			<AppButton size="normal" theme="outline-light" @click="maxApplication" noPadding noBorderRadius>
+				<AppIcon icon="square" />
+			</AppButton>
+			<AppButton size="normal" theme="outline-danger" @click="closeApplication" noPadding noBorderRadius>
+				<AppIcon icon="x" />
+			</AppButton>
+		</div>
+	</header>
 </template>
 
 <script setup>
@@ -35,24 +30,15 @@ const closeApplication = () => store.dispatch('exitApplication')
 
 <style scoped lang="sass">
 .app-header
-    display: flex
-    flex-direction: row
-    justify-content: space-between
-    align-items: center
+    -webkit-app-region: drag !important
     border-bottom: 1px solid var(--main-border-color)
     background-color: var(--main-background-color)
     padding-left: var(--main-start-offset)
-    -webkit-app-region: drag !important
-    min-height: var(--app-header-min-height)
+    height: var(--app-header-min-height)
 
-    .title, .title .title-text
+    .title
         -webkit-app-region: drag !important
-        font-size: 1.1rem
-        font-weight: bold
-        line-height: 1.6rem
-        text-align: center
-        color: var(--color-white)
-
-    .actions .action-button
-        margin: auto .15rem !important
+        user-select: none
+        font-size: 1.5rem
+        line-height: 1.5
 </style>

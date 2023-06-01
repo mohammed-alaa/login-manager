@@ -7,8 +7,13 @@
 </template>
 
 <script setup>
+import { useStore } from 'vuex'
 import AppHeader from '@/components/AppHeader'
 import AppLoading from '@/components/AppLoading'
+
+const store = useStore()
+
+store.dispatch('retrieveAppSettings')
 </script>
 
 <style lang="sass">

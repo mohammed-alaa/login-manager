@@ -1,14 +1,14 @@
 <template>
-    <div class="delete-confirmation">
-        <p class="delete-text">You are about to delete this login, are you sure?</p>
-        <div class="actions">
-            <AppButton type="button" size="normal" theme="danger" @click="confirmDeleting">
-                <AppIcon icon="trash" />
-                <span class="ms-1">Yes, delete</span>
+    <div class="delete-confirmation d-flex flex-column align-items-center">
+        <p class="delete-text text-white">You are about to delete the following login, are you sure?</p>
+        <div class="actions d-flex flex-row align-items-center justify-content-between gap-3">
+            <AppButton size="normal" theme="danger" @click="confirmDeleting">
+                <AppIcon icon="trash-fill" />
+                <span class="ms-1">Delete</span>
             </AppButton>
-            <AppButton type="button" size="normal" theme="success" @click="cancelDeleting">
+            <AppButton size="normal" theme="success" @click="cancelDeleting">
                 <AppIcon icon="x" />
-                <span class="ms-1">No, cancel</span>
+                <span class="ms-1">Cancel</span>
             </AppButton>
         </div>
     </div>
@@ -26,22 +26,14 @@ const cancelDeleting = () => emits('cancelDeleting')
 
 <style scoped lang="sass">
 .delete-confirmation
-    display: flex
-    flex-direction: column
-    align-items: center
-    background-color: #271313
-    border: 1px solid #271313
+    background-color: #1e212b
+    border: 1px solid #6610f2
     padding: 1rem var(--secondary-start-offset)
-    box-shadow: 0 0 0px 0.35rem #481919
+    box-shadow: 0 0 0 0.35rem #6610f2
     margin: 2rem var(--secondary-start-offset)
     border-radius: var(--border-radius)
     .delete-text
-        color: var(--color-white)
         font-size: 2rem
     .actions
-        display: flex
-        flex-direction: row
-        align-items: center
-        justify-content: space-around
         width: 65%
 </style>

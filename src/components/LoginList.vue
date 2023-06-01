@@ -1,22 +1,22 @@
 <template>
-    <div class="login-list">
-        <transition-group name="swap" :key="4">
-            <ol class="list-unstyled m-0 login-list-listbox" v-if="computedFilteredLogins.length" :key="0">
-                <transition-group name="fade" :key="6">
-                    <LoginItem v-for="(login) in filteredLogins()" :key="login.id" :is-active="isLoginActive(login.id)"
-                        @click="activeLoginChange(login.id)" :login="login" />
-                </transition-group>
-            </ol>
-            <div class="empty-logins-list" v-else :key="1">
-                <div class="header">
-                    No logins found
-                </div>
-                <div class="body">
-                    There are no results matching your search.
-                </div>
-            </div>
-        </transition-group>
-    </div>
+	<transition-group name="swap">
+		<template v-if="computedFilteredLogins.length">
+			<div class="login-list d-flex flex-column gap-2 px-2 py-2">
+				<LoginItem v-for="(login) in filteredLogins()" :key="login.id" :is-active="isLoginActive(login.id)"
+					@click="activeLoginChange(login.id)" :login="login" />
+			</div>
+		</template>
+		<template v-else>
+			<div class="empty-logins-list h-100 d-flex flex-column align-items-center justify-content-center">
+				<div class="text-white">
+					No logins found
+				</div>
+				<p class="body mb-0">
+					There are no results matching your search.
+				</p>
+			</div>
+		</template>
+	</transition-group>
 </template>
 
 <script setup>
@@ -38,25 +38,15 @@ const activeLoginChange = (loginId) => store.dispatch('activeLoginChange', login
 </script>
 
 <style lang="sass" scoped>
-$login-list-top-offset: calc(var(--app-header-min-height) + var(--login-header-min-height) + 2px)
 .login-list
-    position: absolute
-    top: #{$login-list-top-offset}
-    left: 0
-    width: calc(100vw * var(--search-flex-gain))
-    height: calc(100vh - #{$login-list-top-offset})
-    background-color: var(--main-background-color)
-    border-right: 1px solid var(--main-border-color)
-    overflow: hidden auto !important
-    .empty-logins-list
-        padding: 2rem
-        height: inherit
-        display: flex
-        flex-direction: column
-        justify-content: center
-        .header
-            color: var(--color-white)
-        .body
-            font-size: .9rem
-            color: var(--color-gray)
+	grid-area: list
+	background-color: var(--main-background-color)
+	border-right: 1px solid var(--main-border-color)
+	overflow: hidden auto !important
+
+.empty-logins-list
+	font-size: 2.25rem
+	.body
+		font-size: 1.05rem
+		color: var(--color-gray)
 </style>

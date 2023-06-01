@@ -1,28 +1,35 @@
 <template>
-    <div class="validate-phrase">
-        <div class="validate-phrase-container text-white">
-            <div class="container">
-                <form @submit.prevent="formSubmit">
-                    <FormInput type="text" id="password" v-model="passPhrase">
-                        <template #label>
-                            <h1 class="text-center text-white mb-3">
-                                <AppIcon icon="user-crown" />
-                                <span class="ms-1">Master Key 🔑</span>
-                            </h1>
-                            <transition-group name="swap" mode="out-in">
-                                <AppAlertVue v-if="isMasterPasswordSubmitted && !isMasterPasswordError" type="danger"
-                                    alert-text="Oops! You got the wrong 🔑." />
-                                <AppAlertVue v-if="isMasterPasswordSubmitted && isMasterPasswordError" type="success"
-                                    alert-text="Yay! Welcome back, master. 😊" />
-                            </transition-group>
-                        </template>
-                    </FormInput>
-                    <AppButton theme="primary" type="submit" @click.prevent="formSubmit" :loading="isLoading"
-                        text="Check the 🔑" class="w-100" />
-                </form>
-            </div>
-        </div>
-    </div>
+	<div class="validate-phrase d-flex flex-column justify-content-center align-items-center">
+		<div class="validate-phrase-container w-50 py-5 px-5">
+			<div class="container-sm">
+				<form @submit.prevent="formSubmit" class="needs-validation">
+					<FormInput type="text" id="password" v-model="passPhrase" :error="isMasterPasswordError"
+						:is-submitted="isMasterPasswordSubmitted" placeholder="Enter your key">
+						<template #label="{ props }">
+							<h1 v-bind="props" class="text-center text-white mb-3">
+								<AppIcon icon="person-fill" />
+								<span class="ms-4">Master Key 🔑</span>
+							</h1>
+						</template>
+						<template #default>
+							<transition-group name="swap" mode="out-in">
+								<template v-if="isMasterPasswordSubmitted">
+									<template v-if="isMasterPasswordError">
+										<AppAlertVue :key="0" type="danger" alert-text="Oops! You got the wrong 🔑." />
+									</template>
+									<template v-else>
+										<AppAlertVue :key="1" type="success" alert-text="Yay! Welcome back, master. 😊" />
+									</template>
+								</template>
+							</transition-group>
+						</template>
+					</FormInput>
+					<AppButton type="submit" @click.prevent="formSubmit" :loading="isLoading" text="Check the 🔑"
+						class="w-100" />
+				</form>
+			</div>
+		</div>
+	</div>
 </template>
 
 <script setup>
@@ -42,27 +49,24 @@ const passPhrase = ref('')
 const isLoading = computed(() => store.getters.getIsLoading)
 
 const formSubmit = async () => {
-    isMasterPasswordError.value = true
-    const validPassPhrase = await store.dispatch('validatePassPhrase', passPhrase.value)
-    isMasterPasswordSubmitted.value = true
-    isMasterPasswordError.value = validPassPhrase
-    validPassPhrase && setTimeout(() => router.replace({ name: "home" }), 1000)
+	isMasterPasswordError.value = true
+	isMasterPasswordSubmitted.value = false
+	const validPassPhrase = await store.dispatch('validatePassPhrase', passPhrase.value)
+	isMasterPasswordSubmitted.value = true
+	isMasterPasswordError.value = !validPassPhrase
+	validPassPhrase && setTimeout(() => router.replace({ name: "home" }), 1000)
 }
 
 onMounted(async () => {
-    const installationValidationResult = await store.dispatch('validateInstalltion')
-    if (!installationValidationResult) {
-        router.replace({ name: "install" })
-    }
+	const installationValidationResult = await store.dispatch('validateInstalltion')
+	if (!installationValidationResult) {
+		router.replace({ name: "install" })
+	}
 })
 </script>
 
 <style scoped lang="sass">
 .validate-phrase
-    display: flex
-    flex-direction: column
-    justify-content: center
-    align-items: center
     height: calc(100vh - var(--app-header-min-height))
 
     .validate-phrase-container
