@@ -60,6 +60,10 @@ const saveSettings = () => {
 watch(() => appSettings.value.startOnLogin, (value) => {
 	if (!value) appSettings.value.startMinimized = false
 })
+
+watch(originalSettings, (value) => {
+	appSettings.value = { ...appSettings.value, ...value }
+})
 </script>
 
 <style scoped lang="sass">
