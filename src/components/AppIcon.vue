@@ -1,5 +1,5 @@
 <template>
-	<i class="bi d-inline-block" :class="`bi-${icon}`" />
+	<i class="bi d-inline-block text-center" :class="`bi-${icon}`" />
 </template>
 
 <script setup>
