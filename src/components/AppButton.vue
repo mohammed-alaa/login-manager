@@ -1,15 +1,15 @@
 <template>
-	<transition name="fade" mode="out-in">
-		<button :key="0" class="btn"
-			:class="[`btn-${size} btn-${theme}`, { 'active': isActive, 'border': border, 'noborderradius': noBorderRadius, 'nopadding': noPadding }]"
-			:type="type" @click.prevent="$emit('click', $event)" :disabled="isButtonDisabled" :aria-disabled="isButtonDisabled"
-			:tabindex="`${isButtonDisabled ? -1 : 0}`">
+	<button :key="0" class="btn text-capitalize"
+		:class="[`btn-${size} btn-${theme}`, { 'active': isActive, 'border': border, 'noborderradius': noBorderRadius, 'nopadding': noPadding }]"
+		:type="type" @click.prevent="$emit('click', $event)" :disabled="isButtonDisabled" :aria-disabled="isButtonDisabled"
+		:tabindex="`${isButtonDisabled ? -1 : 0}`">
+		<transition-group name="fade">
 			<template v-if="loading">
 				<AppIcon icon="spinner-third fa-spin" :key="1" />
 			</template>
 			<slot v-else :key="2"><span class="text-white" v-text="text" /></slot>
-		</button>
-	</transition>
+		</transition-group>
+	</button>
 </template>
 
 <script setup>
@@ -77,9 +77,8 @@ const isButtonDisabled = computed(() => props.disabled || props.loading)
 <style scoped lang="sass">
 .btn
 	-webkit-app-region: no-drag
-	text-transform: uppercase
-	border: none
 	white-space: nowrap
+	border: none
 
 	&:disabled
 		pointer-events: auto
