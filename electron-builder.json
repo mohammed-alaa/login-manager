@@ -2,16 +2,16 @@
 	"appId": "com.login-manager.login-manager",
 	"productName": "Login Manager",
 	"directories": {
-		"output": "release"
+		"output": "release",
+		"buildResources": "resources"
 	},
 	"files": [
-		"'!**/.vscode/*'",
-		"'!src/*'",
-		"'!electron.vite.config.{js,ts,mjs,cjs}'",
-		"'!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'",
-		"'!{.env,.env.*,.npmrc,pnpm-lock.yaml}'"
+		"build/**/*",
+		"package.json",
+		"resources/**/*",
+		"node_modules/**/*"
 	],
-	"asarUnpack": ["resources/**"],
+	"asarUnpack": ["./resources/**"],
 	"win": {
 		"target": "nsis",
 		"icon": "resources/icons/icon_512x512.png",
