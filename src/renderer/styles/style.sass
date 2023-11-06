@@ -4,6 +4,23 @@
 @tailwind components
 @tailwind utilities
 
+main
+	font-family: 'Gantari', sans-serif
+	background-color: var(--main-background-color) !important
+
+.app-header
+	-webkit-app-region: drag !important
+	border-bottom: 1px solid var(--main-border-color)
+	background-color: var(--main-background-color)
+	padding-left: var(--main-start-offset)
+	height: var(--app-header-min-height)
+
+	.title
+		-webkit-app-region: drag !important
+		user-select: none
+		font-size: 1.5rem
+		line-height: 1.5
+
 .ms-2
 	margin-left: .3rem
 

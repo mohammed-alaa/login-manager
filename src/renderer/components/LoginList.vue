@@ -1,7 +1,7 @@
 <template>
 	<transition-group name="swap">
 		<template v-if="computedFilteredLogins.length">
-			<div class="login-list d-flex flex-column gap-2 px-2 py-2">
+			<div class="login-list flex flex-col gap-2 p-2">
 				<LoginItem
 					v-for="login in filteredLogins()"
 					:key="login.id"
@@ -13,7 +13,7 @@
 		</template>
 		<template v-else>
 			<div
-				class="empty-logins-list h-100 d-flex flex-column align-items-center justify-content-center"
+				class="empty-logins-list h-full flex flex-col items-center justify-center"
 			>
 				<div class="text-white">No logins found</div>
 				<p class="body mb-0">

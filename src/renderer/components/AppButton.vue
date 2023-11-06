@@ -1,7 +1,7 @@
 <template>
 	<button
 		:key="0"
-		class="btn text-capitalize"
+		class="btn whitespace-nowrap capitalize"
 		:class="[
 			`btn-${size} btn-${theme}`,
 			{
@@ -17,14 +17,14 @@
 		:tabindex="`${isButtonDisabled ? -1 : 0}`"
 		@click.prevent="$emit('click', $event)"
 	>
-		<transition-group name="fade">
-			<template v-if="loading">
-				<AppIcon :key="1" icon="spinner-third fa-spin" />
-			</template>
-			<slot v-else :key="2"
-				><span class="text-white" v-text="text"
-			/></slot>
-		</transition-group>
+		<!-- <transition-group name="fade"> -->
+		<template v-if="loading">
+			<AppIcon :key="1" icon="refresh" class="animate-spin" />
+		</template>
+		<slot v-else :key="2">
+			<span class="text-white" v-text="text" />
+		</slot>
+		<!-- </transition-group> -->
 	</button>
 </template>
 
@@ -93,7 +93,6 @@ const isButtonDisabled = computed(() => props.disabled || props.loading)
 <style scoped lang="sass">
 .btn
 	-webkit-app-region: no-drag
-	white-space: nowrap
 	border: none
 
 	&:disabled

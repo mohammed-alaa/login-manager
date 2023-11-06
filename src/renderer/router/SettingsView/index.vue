@@ -2,7 +2,7 @@
 	<section class="settings overflow-hidden">
 		<div class="container text-white">
 			<div
-				class="settings-header d-flex flex-row align-items-center justify-content-between position-sticky top-0"
+				class="settings-header flex items-center justify-between sticky top-0"
 			>
 				<div class="title">
 					<h1 class="text-white">Settings</h1>
@@ -18,7 +18,7 @@
 					</AppButton>
 				</div>
 			</div>
-			<div class="settings-body d-flex flex-column overflow-auto gap-5">
+			<div class="settings-body flex flex-col overflow-auto gap-5">
 				<AppSettingsItem>
 					<FormInputSwitch
 						id="startOnLogin"
@@ -55,8 +55,8 @@ import { useStore } from "vuex"
 import { useRouter } from "vue-router"
 import AppIcon from "@components/AppIcon"
 import AppButton from "@components/AppButton"
-import FormInputSwitch from "@components/FormInputSwitch.vue"
-import AppSettingsItem from "@components/AppSettingsItem.vue"
+import FormInputSwitch from "@components/FormInputSwitch"
+import AppSettingsItem from "@components/AppSettingsItem"
 
 const store = useStore()
 const router = useRouter()

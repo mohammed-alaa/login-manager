@@ -1,5 +1,5 @@
 <template>
-	<div class="login-view d-grid">
+	<div class="login-view grid">
 		<SearchLogins />
 		<LoginHeader />
 		<LoginList />

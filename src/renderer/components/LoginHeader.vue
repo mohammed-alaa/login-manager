@@ -1,11 +1,9 @@
 <template>
-	<div
-		class="login-header d-flex flex-row align-items-center justify-content-between position-relative"
-	>
+	<div class="login-header flex items-center justify-between relative">
 		<div class="text-white">
 			<h2 class="m-0">{{ getLoginsLength }} Logins</h2>
 		</div>
-		<div class="d-flex flex-row align-items-center gap-2">
+		<div class="flex items-center gap-2">
 			<AppButton
 				id="newLogin"
 				theme="outline-primary"

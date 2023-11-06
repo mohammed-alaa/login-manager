@@ -1,5 +1,5 @@
 <template>
-	<div class="login-body d-flex flex-column gap-4">
+	<div class="login-body flex flex-col gap-4">
 		<LoginBodyActions />
 		<transition-group name="swap">
 			<template v-if="isEditing || isCreating">
@@ -10,7 +10,7 @@
 					</div>
 					<div
 						:key="11"
-						class="rest d-flex flex-row justify-content-between align-items-center"
+						class="rest flex justify-between items-center"
 					>
 						<FormInput
 							id="website"
@@ -30,7 +30,7 @@
 				<template v-if="isViewing || isDeleting">
 					<div
 						:key="12"
-						class="rest d-flex flex-row justify-content-between align-items-center"
+						class="rest flex justify-between items-center"
 					>
 						<span
 							class="text-white text-truncate"
@@ -42,7 +42,7 @@
 				<template v-else-if="isEditing || isCreating">
 					<div
 						:key="13"
-						class="rest d-flex flex-row justify-content-between align-items-center"
+						class="rest flex justify-between items-center"
 					>
 						<FormInput
 							id="website"
@@ -81,10 +81,10 @@
 				<template v-if="isViewing || isDeleting">
 					<div
 						:key="8"
-						class="rest d-flex flex-row justify-content-between align-items-center"
+						class="rest flex justify-between items-center"
 					>
 						<span
-							class="text-white text-truncate"
+							class="text-white truncate"
 							v-text="togglablePassword"
 						/>
 						<AppButtonCopy :value="getLoginPassword" />
@@ -92,9 +92,7 @@
 				</template>
 				<template v-else-if="isEditing || isCreating">
 					<div :key="9">
-						<div
-							class="rest d-flex flex-row justify-content-between align-items-center"
-						>
+						<div class="rest flex justify-between items-center">
 							<FormInput
 								id="website"
 								v-model="loginPlaceholder.password"
@@ -122,8 +120,8 @@
 			<template v-else-if="isDeleting">
 				<DeleteConfirmation
 					:key="7"
-					@confirmDeleting="confirmDeletion"
-					@cancelDeleting="cancelDeleting"
+					@confirm-deleting="confirmDeletion"
+					@cancel-deleting="cancelDeleting"
 				/>
 			</template>
 		</transition-group>

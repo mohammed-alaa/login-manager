@@ -1,16 +1,12 @@
 <template>
-	<div
-		class="body-actions d-flex flex-row align-items-center justify-content-between gap-4 flex-wrap"
-	>
+	<div class="body-actions flex items-center justify-between gap-4">
 		<transition name="swap">
 			<template v-if="showWebsiteName">
-				<div
-					class="website d-flex flex-row d-flex flex-row align-items-center gap-2 overflow-hidden"
-				>
+				<div class="website flex items-center gap-2 overflow-hidden">
 					<AppIcon icon="globe" class="text-white py-2 px-3" />
 					<a
 						:key="10"
-						class="website-href text-lowercase text-decoration-none py-2 px-4 text-truncate"
+						class="website-href lowercase text-decoration-none py-2 px-4 truncate"
 						target="_blank"
 						noreferrer
 						:href="getLoginWebsiteAddress"
@@ -23,9 +19,7 @@
 				<div />
 			</template>
 		</transition>
-		<div
-			class="d-flex flex-row align-items-center justify-content-center gap-2"
-		>
+		<div class="flex items-center justify-center gap-2">
 			<AppButton
 				id="editLogin"
 				theme="outline-warning"

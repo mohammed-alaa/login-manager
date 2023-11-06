@@ -1,5 +1,5 @@
 <template>
-	<div :class="`w-100 ${!nomargins ? 'mt-3 mb-4' : ''}`">
+	<div :class="`w-full ${!nomargins ? 'mt-3 mb-4' : ''}`">
 		<slot v-if="!nolabel" name="label" :for="id">
 			<label :for="id" class="text-white mb-2">
 				{{ label }}
@@ -7,7 +7,7 @@
 		</slot>
 		<input
 			:id="id"
-			class="form-control"
+			class="block w-full"
 			:class="[
 				`form-control-${size}`,
 				{

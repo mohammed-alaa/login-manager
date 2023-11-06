@@ -1,21 +1,32 @@
 <template>
-	<i class="bi d-inline-block text-center" :class="`bi-${icon}`" />
+	<template v-if="error">
+		<b>{{ iconName }}</b>
+	</template>
+	<template v-else>
+		<component :is="iconSvg" />
+	</template>
 </template>
 
 <script setup>
-defineProps({
+import { ref, computed, defineAsyncComponent } from "vue"
+
+const props = defineProps({
 	icon: {
 		type: String,
 		required: true,
 	},
+	size: {
+		type: String,
+		default: "md",
+	},
 })
-</script>
 
-<style scoped lang="sass">
-.bi
-	&::before
-		width: 1.25rem
-	&.bi-x::before
-		font-size: 1.5rem
-		vertical-align: -0.425rem
-</style>
+const iconName = computed(() => props.icon)
+
+const error = ref(false)
+const iconSvg = defineAsyncComponent(() =>
+	import(`@icons/${iconName.value}`).catch(() => () => {
+		error.value = true
+	})
+)
+</script>

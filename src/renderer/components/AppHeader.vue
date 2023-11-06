@@ -1,64 +1,32 @@
-<template>
-	<header
-		class="app-header d-flex flex-row justify-content-between align-content-center"
-	>
-		<div class="title text-white fw-bold text-center my-auto">
-			<span>Login Manager</span>
-		</div>
-		<div class="d-flex flex-row gap-1 align-items-center me-1">
-			<AppButton
-				size="normal"
-				theme="outline-light"
-				no-padding
-				no-border-radius
-				@click="minApplication"
-			>
-				<AppIcon icon="dash" />
-			</AppButton>
-			<AppButton
-				size="normal"
-				theme="outline-light"
-				no-padding
-				no-border-radius
-				@click="maxApplication"
-			>
-				<AppIcon icon="square" />
-			</AppButton>
-			<AppButton
-				size="normal"
-				theme="outline-danger"
-				no-padding
-				no-border-radius
-				@click="closeApplication"
-			>
-				<AppIcon icon="x" />
-			</AppButton>
-		</div>
-	</header>
-</template>
-
 <script setup>
-import { useStore } from "vuex"
-import AppButton from "@components/AppButton"
+// import { useStore } from "vuex"
 import AppIcon from "@components/AppIcon"
+import AppTitleButton from "@components/AppTitleButton"
 
-const store = useStore()
+// const store = useStore()
 const minApplication = () => store.dispatch("minimizeApplication")
 const maxApplication = () => store.dispatch("maximizeApplication")
 const closeApplication = () => store.dispatch("exitApplication")
 </script>
 
-<style scoped lang="sass">
-.app-header
-    -webkit-app-region: drag !important
-    border-bottom: 1px solid var(--main-border-color)
-    background-color: var(--main-background-color)
-    padding-left: var(--main-start-offset)
-    height: var(--app-header-min-height)
-
-    .title
-        -webkit-app-region: drag !important
-        user-select: none
-        font-size: 1.5rem
-        line-height: 1.5
-</style>
+<template>
+	<header class="app-header flex justify-between content-center">
+		<div class="title text-white font-bold text-center my-auto">
+			<span>Login Manager</span>
+		</div>
+		<div class="flex gap-1 items-center me-1">
+			<AppTitleButton @click="minApplication">
+				<!-- <IconMinimize /> -->
+				<AppIcon icon="minimize" />
+			</AppTitleButton>
+			<AppTitleButton @click="maxApplication">
+				<!-- <IconSquare /> -->
+				<AppIcon icon="square" />
+			</AppTitleButton>
+			<AppTitleButton theme="outline-danger" @click="closeApplication">
+				<!-- <IconX /> -->
+				<AppIcon icon="x" />
+			</AppTitleButton>
+		</div>
+	</header>
+</template>
