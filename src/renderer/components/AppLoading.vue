@@ -9,11 +9,12 @@
 
 <script setup>
 import { computed } from "vue"
-import { useStore } from "vuex"
+// import { useStore } from "vuex"
 import AppIcon from "@components/AppIcon"
 
-const store = useStore()
-const isLoading = computed(() => store.getters.getIsLoading)
+// const store = useStore()
+// const isLoading = computed(() => store.getters.getIsLoading)
+const isLoading = computed(() => false)
 </script>
 
 <style scoped lang="sass">

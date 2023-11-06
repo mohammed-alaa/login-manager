@@ -7,6 +7,7 @@ import {
 	shell,
 	Tray,
 	Menu,
+	nativeImage,
 } from "electron"
 import {
 	validatePassPhrase,
@@ -18,19 +19,41 @@ import {
 	validateInstallation,
 	createPassPhrase,
 	updateSettings,
-} from "./utils"
-import icon from "../../resources/icons/icon_512x512.png?asset"
+	isDevelopment,
+	reportError,
+} from "@utils"
+import { initServer, deInitServer } from "./server"
+import { initDatabase, deInitDatabase } from "@database"
+import { initLogger, deInitLogger } from "./logger"
 
-const isDevelopment = process.env.NODE_ENV === "development"
+let tray: Tray | null = null
+let isInDevelopment: boolean = false
+let mainWindow: BrowserWindow | null = null
+
+const initialize = () => {
+	const appPath = getAppDataPath()
+	isInDevelopment = isDevelopment()
+	initDatabase(appPath)
+	initServer()
+	initLogger()
+}
+
+const deInit = () => {
+	deInitDatabase()
+	deInitServer()
+	deInitLogger()
+}
 
 protocol.registerSchemesAsPrivileged([
 	{ scheme: "app", privileges: { secure: true, standard: true } },
 ])
 
-let mainWindow = null
-let tray = null
-
 async function createWindow() {
+	initialize()
+	const icon = nativeImage.createFromPath(
+		join(__dirname, "../../resources/icons/icon_512x512.png")
+	)
+
 	mainWindow = new BrowserWindow({
 		minWidth: 900,
 		minHeight: 700,
@@ -39,13 +62,13 @@ async function createWindow() {
 		titleBarStyle: "hidden",
 		center: true,
 		darkTheme: true,
-		show: isDevelopment
+		show: isInDevelopment
 			? true
 			: !(
 					process.appSettings.startOnLogin &&
 					process.appSettings.startMinimized
 			  ),
-		paintWhenInitiallyHidden: isDevelopment
+		paintWhenInitiallyHidden: isInDevelopment
 			? true
 			: !(
 					process.appSettings.startOnLogin &&
@@ -54,7 +77,7 @@ async function createWindow() {
 		icon: icon,
 		webPreferences: {
 			preload: resolve(__dirname, "../preload/index.js"),
-			devTools: isDevelopment,
+			devTools: isInDevelopment,
 			defaultEncoding: "UTF-8",
 		},
 	})
@@ -67,12 +90,12 @@ async function createWindow() {
 			{
 				label: "Hide App",
 				role: "hide",
-				click: () => mainWindow.hide(),
+				click: () => mainWindow?.hide(),
 			},
 			{
 				label: "Quit",
 				role: "quit",
-				click: () => mainWindow.close(),
+				click: () => mainWindow?.close(),
 			},
 		])
 	)
@@ -84,50 +107,52 @@ async function createWindow() {
 	})
 
 	mainWindow.on("show", () => {
-		tray.setContextMenu(
+		tray?.setContextMenu(
 			Menu.buildFromTemplate([
 				{
 					label: "Hide App",
 					role: "hide",
-					click: () => mainWindow.hide(),
+					click: () => mainWindow?.hide(),
 				},
 				{
 					label: "Quit",
 					role: "quit",
-					click: () => mainWindow.close(),
+					click: () => mainWindow?.close(),
 				},
 			])
 		)
 	})
 
 	mainWindow.on("hide", () => {
-		tray.setContextMenu(
+		tray?.setContextMenu(
 			Menu.buildFromTemplate([
 				{
 					label: "Show App",
 					role: "unhide",
-					click: () => mainWindow.show(),
+					click: () => mainWindow?.show(),
 				},
 				{
 					label: "Quit",
 					role: "quit",
-					click: () => mainWindow.close(),
+					click: () => mainWindow?.close(),
 				},
 			])
 		)
 	})
 
 	mainWindow.on("closed", function () {
+		deInit()
+		tray?.destroy()
 		mainWindow = null
+		tray = null
 	})
 
-	if (isDevelopment && process.env.ELECTRON_RENDERER_URL) {
-		await mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
+	if (isInDevelopment && process.env.ELECTRON_RENDERER_URL) {
 		if (!process.env.IS_TEST) {
 			mainWindow.webContents.openDevTools()
 		}
+		await mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
 	} else {
-		mainWindow.setMenu(null)
 		mainWindow.loadFile(resolve(__dirname, "../renderer/index.html"))
 	}
 
@@ -136,6 +161,12 @@ async function createWindow() {
 		return { action: "deny" }
 	})
 }
+
+process.on("uncaughtException", (error) => {
+	reportError("An uncaught exception occurred:", {
+		error: error,
+	})
+})
 
 app.on("window-all-closed", () => {
 	if (process.platform !== "darwin") {
@@ -147,13 +178,13 @@ app.on("activate", () => {
 	if (mainWindow === null) createMainWindow()
 })
 
-app.on("ready", async () => {
+app.on("ready", () => {
 	createMainWindow()
 })
 
 const createMainWindow = () => {
 	validateInstallation(getAppDataPath())
-	if (!isDevelopment) {
+	if (!isInDevelopment) {
 		setAutoLaunch()
 	}
 
@@ -169,7 +200,7 @@ const setAutoLaunch = () => {
 	})
 }
 
-if (isDevelopment) {
+if (isInDevelopment) {
 	if (process.platform === "win32") {
 		process.on("message", (data) => {
 			if (data === "graceful-exit") {
@@ -189,15 +220,15 @@ const getAppDataPath = () => {
 
 // IPCMain Events
 ipcMain.on("exit-application", () => {
-	mainWindow.hide()
+	mainWindow?.hide()
 })
 
 ipcMain.on("minimize-application", () => {
-	mainWindow.minimize()
+	mainWindow?.minimize()
 })
 
 ipcMain.on("maximize-application", () => {
-	mainWindow.isMaximized() ? mainWindow.restore() : mainWindow.maximize()
+	mainWindow?.isMaximized() ? mainWindow?.restore() : mainWindow?.maximize()
 })
 
 ipcMain.handle("validate-installation", () => {

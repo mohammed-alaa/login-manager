@@ -1,5 +1,5 @@
 import { createRouter, createWebHashHistory } from "vue-router"
-import PassPhraseView from "@/router/PassPhraseView"
+import PassPhraseView from "@views/PassPhraseView"
 
 const routes = [
 	{
@@ -8,19 +8,19 @@ const routes = [
 		component: PassPhraseView,
 	},
 	{
-		path: "/home",
+		path: "/",
 		name: "home",
-		component: () => import("@/router/HomeView"),
+		component: () => import("@views/HomeView"),
 	},
 	{
 		path: "/settings",
 		name: "settings",
-		component: () => import("@/router/SettingsView"),
+		component: () => import("@views/SettingsView"),
 	},
 	{
 		path: "/install",
 		name: "install",
-		component: () => import("@/router/InstallView"),
+		component: () => import("@views/InstallView"),
 	},
 ]
 

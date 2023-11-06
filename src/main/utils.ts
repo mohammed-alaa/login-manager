@@ -1,7 +1,8 @@
-const { compareSync, hashSync, genSaltSync } = require("bcrypt")
-const { encrypt, decrypt } = require("aes256")
-const { join } = require("path")
-const { existsSync, writeFileSync, readFileSync } = require("fs")
+import { join } from "path"
+import { encrypt, decrypt } from "aes256"
+import { compareSync, hashSync, genSaltSync } from "bcrypt"
+import { existsSync, writeFileSync, readFileSync } from "fs"
+import { getLogger } from "./logger"
 
 const FILE_DATABASE = "data.json"
 const FILE_SETTINGS = "settings.json"
@@ -145,6 +146,33 @@ const updateSettings = (appPath, newSettings) => {
 	delete process.appSettings.loaded
 	writeDBFile(settinsFile, process.appSettings)
 	validateInstallation(appPath)
+}
+
+export function isDevelopment() {
+	return process.env.NODE_ENV === "development"
+}
+
+export function reportError(message: string, context: object = {}) {
+	if (isDevelopment()) {
+		console.error(message, context)
+	} else {
+		getLogger()?.error(message, context)
+	}
+}
+
+export function debug<T>(
+	message: string,
+	context: null | boolean | object | string | number | Array<T> = null
+) {
+	if (isDevelopment()) {
+		if (context) {
+			console.log(message, context)
+			getLogger()?.info(message, context)
+		} else {
+			console.log(message)
+			getLogger()?.info(message)
+		}
+	}
 }
 
 export {

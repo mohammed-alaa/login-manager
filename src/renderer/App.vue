@@ -1,25 +1,18 @@
 <template>
-	<main class="main">
+	<main class="main relative h-screen">
 		<AppHeader />
 		<AppLoading />
 		<router-view />
 	</main>
 </template>
 
-<script setup>
-import { useStore } from "vuex"
+<script setup lang="ts">
+import { onMounted } from "vue"
+import store from "@store"
 import AppHeader from "@components/AppHeader"
 import AppLoading from "@components/AppLoading"
 
-const store = useStore()
-
-store.dispatch("retrieveAppSettings")
+onMounted(() => {
+	store.init()
+})
 </script>
-
-<style scoped lang="sass">
-.main
-    background-color: var(--main-background-color) !important
-    position: relative
-    min-height: 100vh
-    font-family: 'Gantari', sans-serif
-</style>
