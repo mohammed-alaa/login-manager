@@ -42,6 +42,10 @@ export default defineConfig({
 					find: "@routes",
 					replacement: resolve(__dirname, "./src/main/routes"),
 				},
+				{
+					find: "@schemas",
+					replacement: resolve(__dirname, "./src/main/schemas.ts"),
+				},
 			],
 		},
 		build: {

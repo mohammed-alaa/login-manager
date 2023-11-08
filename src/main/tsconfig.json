@@ -17,6 +17,7 @@
 			"@types": ["./types.ts"],
 			"@routes/*": ["routes/*"],
 			"@globalTypes": ["../types.ts"],
+			"@schemas": ["./schemas.ts"],
 			"@database": ["./repositories/database.ts"],
 			"@repositories/*": ["./repositories/*"]
 		},
