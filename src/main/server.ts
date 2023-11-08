@@ -1,9 +1,11 @@
 import http from "http"
 import { URL } from "url"
+import getRawBody from "raw-body"
 import { debug } from "@utils"
 import { Request, Response, Route, ResponseFunction } from "@types"
 // import retrieveLogins from "@routes/retrieveLogins"
 import retrieveSettings from "@routes/settings/retrieveSettings"
+import updateSetting from "@routes/settings/updateSetting"
 
 let _server: http.Server | null = null
 const port = import.meta.env.MAIN_VITE_SERVER_PORT ?? 3000
@@ -13,6 +15,11 @@ const _routes: Route[] = [
 		path: "/settings",
 		method: "GET",
 		handler: retrieveSettings,
+	},
+	{
+		path: "/settings",
+		method: "PUT",
+		handler: updateSetting,
 	},
 	// {
 	// 	path: "/logins",
@@ -46,7 +53,22 @@ const routeNotFoundResponse = (res: Response) => {
 	response(res, 404, { message: "Not Found" })
 }
 
-const router = (req: Request, res: Response) => {
+const parseBody = async (req: Request) => {
+	try {
+		const body = await getRawBody(req, {
+			encoding: true,
+		})
+
+		return JSON.parse(body)
+	} catch (error: any) {
+		debug("Error parsing body", {
+			message: error.message,
+		})
+		return {}
+	}
+}
+
+const router = async (req: Request, res: Response) => {
 	if (!req.url || !req.method) {
 		routeNotFoundResponse(res)
 		return
@@ -63,6 +85,9 @@ const router = (req: Request, res: Response) => {
 
 	if (method === "OPTIONS") {
 		return response(res, 200, { message: "OK" })
+	} else if (!["GET", "DELETE"].includes(method)) {
+		req.body = await parseBody(req)
+		res.req = req
 	}
 
 	const route = _routes.find(

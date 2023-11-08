@@ -2,8 +2,12 @@ import type { IncomingMessage, ServerResponse } from "http"
 
 export * from "@globalTypes"
 
-export type Request = IncomingMessage
-export type Response = ServerResponse
+export type Request = IncomingMessage & {
+	body?: any
+}
+export type Response = ServerResponse & {
+	req: Request
+}
 export type ResponseData = object | string | number | boolean | null
 
 export type ResponseFunction = (
