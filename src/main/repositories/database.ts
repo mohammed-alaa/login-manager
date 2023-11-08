@@ -2,76 +2,56 @@ import { existsSync, writeFile } from "fs"
 import { resolve } from "path"
 import sqlite from "sqlite3"
 import { debug, reportError } from "@utils"
-import { Settings } from "@types"
 
 let _dbInstance: sqlite.Database | null = null
+type valueTypeValues = "string" | "number" | "boolean" | "json"
 
-export const transformSettingValue = (
-	value: any,
-	isFromDatabase: boolean = true
-) => {
-	return isFromDatabase ? JSON.parse(value) : JSON.stringify(value)
+export type DatabaseSetting = {
+	id?: number
+	name: string
+	value?: string
+	defaultValue: string
+	type: valueTypeValues
 }
 
-const checkEntry = (name: string): Promise<boolean> => {
-	return new Promise((resolve, reject) => {
-		_dbInstance?.get(
-			"SELECT `value` FROM `settings` WHERE `name` = ?",
-			[name],
-			(err: Error | null, row: string) => {
-				if (err) {
-					reject(err)
-				} else {
-					resolve(row ? true : false)
-				}
-			}
-		)
-	})
-}
-
-const checkDefaultSettings = () => {
-	const defaultSettings: Settings = {
-		startOnLogin: false,
-		startMinimized: false,
-		hashedPassPhrase: "",
+export const exportToDatabaseValue = (value: any, type: valueTypeValues) => {
+	switch (type) {
+		case "string":
+		case "number":
+		case "boolean":
+			return String(value)
+		case "json":
+			return JSON.stringify(value)
 	}
+}
 
-	Object.entries(defaultSettings).forEach(([name, value]) => {
-		checkEntry(name)
-			.then((exists) => {
-				if (exists) {
-					return
-				}
-				_dbInstance?.run(
-					"INSERT INTO `settings` (`name`, `value`) VALUES (?, ?)",
-					[name, transformSettingValue(value, false)],
-					(result: sqlite.RunResult, error: Error | null) => {
-						if (error) {
-							reportError("Error inserting default setting", {
-								message: error.message,
-								context: {
-									name,
-									value,
-									error,
-								},
-							})
-						} else {
-							debug(`Default setting "${name}" inserted`)
-						}
-					}
-				)
-			})
-			.catch((error: Error) => {
-				reportError("Error checking default setting", {
+export const exportFromDatabaseValue = (
+	value: string,
+	type: valueTypeValues
+) => {
+	switch (type) {
+		case "string":
+			return String(value)
+		case "number":
+			return Number(value)
+		case "boolean": {
+			const lowerCaseValue = value.toLowerCase()
+			return lowerCaseValue === "true" || lowerCaseValue === "1"
+		}
+		case "json":
+			try {
+				return JSON.parse(value)
+			} catch (error: any) {
+				reportError("Error parsing JSON", {
 					message: error.message,
 					context: {
-						name,
 						value,
-						error,
+						type,
 					},
 				})
-			})
-	})
+				return null
+			}
+	}
 }
 
 const createDatabaseTables = () => {
@@ -79,13 +59,10 @@ const createDatabaseTables = () => {
 		_dbInstance
 			?.run(
 				"CREATE TABLE IF NOT EXISTS `logins` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `website` TEXT NOT NULL, `username` TEXT NOT NULL, `password` TEXT NOT NULL)",
-				(result: sqlite.RunResult, error: Error | null) => {
+				(error: Error | null) => {
 					if (error) {
 						reportError("Error creating `logins` table", {
 							message: error.message,
-							context: {
-								result,
-							},
 						})
 					} else {
 						debug("Database table `logins` created")
@@ -94,15 +71,12 @@ const createDatabaseTables = () => {
 			)
 			?.run(
 				"CREATE INDEX IF NOT EXISTS `website` ON `logins` (`website`)",
-				(result: sqlite.RunResult, error: Error | null) => {
+				(error: Error | null) => {
 					if (error) {
 						reportError(
 							"Error creating `website` index on `logins` table",
 							{
 								message: error.message,
-								context: {
-									result,
-								},
 							}
 						)
 					} else {
@@ -112,15 +86,12 @@ const createDatabaseTables = () => {
 			)
 			?.run(
 				"CREATE INDEX IF NOT EXISTS `username` ON `logins` (`username`)",
-				(result: sqlite.RunResult, error: Error | null) => {
+				(error: Error | null) => {
 					if (error) {
 						reportError(
 							"Error creating `username` index on `logins` table",
 							{
 								message: error.message,
-								context: {
-									result,
-								},
 							}
 						)
 					} else {
@@ -132,18 +103,14 @@ const createDatabaseTables = () => {
 
 	_dbInstance?.serialize(() => {
 		_dbInstance?.run(
-			"CREATE TABLE `settings` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL UNIQUE, `value` TEXT DEFAULT '');",
-			(result: sqlite.RunResult, error: Error | null) => {
+			"CREATE TABLE `settings` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL UNIQUE, `value` TEXT, `defaultValue` TEXT, `type` TEXT NOT NULL);",
+			(error: Error | null) => {
 				if (error) {
 					reportError("Error creating database table settings", {
 						message: error.message,
-						context: {
-							result,
-						},
 					})
 				} else {
 					debug("Database table `settings` created")
-					checkDefaultSettings()
 				}
 			}
 		)
@@ -192,18 +159,6 @@ export function initDatabase(appPath: string) {
 	)
 }
 
-export function getDatabaseInstance() {
-	return _dbInstance
-}
-
-export function getDatabaseInstanceOrFail() {
-	if (!getDatabaseInstance()) {
-		reportError("Database instance is not initialized")
-	}
-
-	return _dbInstance
-}
-
 export function deInitDatabase() {
 	_dbInstance?.close((error) => {
 		if (error) {
@@ -217,4 +172,16 @@ export function deInitDatabase() {
 			debug("Database connection closed")
 		}
 	})
+}
+
+export function getDatabaseInstance() {
+	return _dbInstance
+}
+
+export function getDatabaseInstanceOrFail() {
+	if (!getDatabaseInstance()) {
+		reportError("Database instance is not initialized")
+	}
+
+	return _dbInstance
 }
