@@ -4,5 +4,5 @@
 export type Settings = {
 	startOnLogin: boolean
 	startMinimized: boolean
-	hashedPassPhrase: string
+	// hashedPassPhrase: string
 }
