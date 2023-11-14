@@ -144,6 +144,10 @@ export default defineConfig({
 					find: "@globalTypes",
 					replacement: resolve(__dirname, "./src/types.ts"),
 				},
+				{
+					find: "@schemas",
+					replacement: resolve(__dirname, "./src/renderer/schemas.ts"),
+				},
 			],
 		},
 		css: {
