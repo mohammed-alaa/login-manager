@@ -9,13 +9,14 @@
 				border: border,
 				noborderradius: noBorderRadius,
 				nopadding: noPadding,
+				'w-full': block,
 			},
 		]"
 		:type="type"
 		:disabled="isButtonDisabled"
 		:aria-disabled="isButtonDisabled"
 		:tabindex="`${isButtonDisabled ? -1 : 0}`"
-		@click.prevent="$emit('click', $event)"
+		@click="buttonClicked"
 	>
 		<!-- <transition-group name="fade"> -->
 		<template v-if="loading">
@@ -83,11 +84,24 @@ const props = defineProps({
 		required: false,
 		default: false,
 	},
+	block: {
+		type: Boolean,
+		default: false,
+	},
 })
 
-defineEmits(["click"])
+const emits = defineEmits(["click"])
 
 const isButtonDisabled = computed(() => props.disabled || props.loading)
+
+const buttonClicked = (e) => {
+	if (isButtonDisabled.value || props.type === "submit") {
+		return
+	}
+
+	e.preventDefault()
+	emits("click")
+}
 </script>
 
 <style scoped lang="sass">
