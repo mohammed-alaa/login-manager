@@ -3,10 +3,17 @@ import {
 	getDatabaseInstanceOrFail,
 	exportToDatabaseValue,
 	exportFromDatabaseValue,
-	type DatabaseSetting,
+	type valueTypeValues,
 } from "@database"
 
 type TransformedSetting = { [key: string]: any }
+type DatabaseSetting = {
+	id?: number
+	name: string
+	value?: string
+	defaultValue: string
+	type: valueTypeValues
+}
 
 const defaultSettings: DatabaseSetting[] = [
 	{
@@ -18,6 +25,11 @@ const defaultSettings: DatabaseSetting[] = [
 		name: "startMinimized",
 		defaultValue: "false",
 		type: "boolean",
+	},
+	{
+		name: "hashedPassPhrase",
+		defaultValue: "",
+		type: "string",
 	},
 ]
 

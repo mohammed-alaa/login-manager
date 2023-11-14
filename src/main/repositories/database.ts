@@ -4,15 +4,7 @@ import sqlite from "sqlite3"
 import { debug, reportError } from "@utils"
 
 let _dbInstance: sqlite.Database | null = null
-type valueTypeValues = "string" | "number" | "boolean" | "json"
-
-export type DatabaseSetting = {
-	id?: number
-	name: string
-	value?: string
-	defaultValue: string
-	type: valueTypeValues
-}
+export type valueTypeValues = "string" | "number" | "boolean" | "json"
 
 export const exportToDatabaseValue = (value: any, type: valueTypeValues) => {
 	switch (type) {
@@ -103,7 +95,7 @@ const createDatabaseTables = () => {
 
 	_dbInstance?.serialize(() => {
 		_dbInstance?.run(
-			"CREATE TABLE `settings` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL UNIQUE, `value` TEXT, `defaultValue` TEXT, `type` TEXT NOT NULL);",
+			"CREATE TABLE IF NOT EXISTS `settings` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL UNIQUE, `value` TEXT, `defaultValue` TEXT, `type` TEXT NOT NULL);",
 			(error: Error | null) => {
 				if (error) {
 					reportError("Error creating database table settings", {
@@ -139,6 +131,7 @@ const createDatabaseFile = (appPath: string) => {
 
 export function initDatabase(appPath: string) {
 	const dbFile = createDatabaseFile(appPath)
+	debug("appPath", appPath)
 
 	_dbInstance = new sqlite.Database(
 		dbFile,
