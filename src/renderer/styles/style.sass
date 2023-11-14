@@ -1,8 +1,19 @@
-@import './variables'
-
 @tailwind base
 @tailwind components
 @tailwind utilities
+
+@import './variables'
+
+@layer base
+	h1
+		@apply font-bold
+		@apply text-2xl
+	h2
+		@apply font-bold
+		@apply text-xl
+	h3
+		@apply font-bold
+		@apply text-lg
 
 main
 	font-family: 'Gantari', sans-serif
@@ -13,13 +24,16 @@ main
 	border-bottom: 1px solid var(--main-border-color)
 	background-color: var(--main-background-color)
 	padding-left: var(--main-start-offset)
-	height: var(--app-header-min-height)
+	@apply h-topbar
 
 	.title
 		-webkit-app-region: drag !important
 		user-select: none
 		font-size: 1.5rem
 		line-height: 1.5
+
+.wrapper
+	height: calc(100vh - theme('height.topbar'))
 
 .ms-2
 	margin-left: .3rem

@@ -1,13 +1,22 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
-	content: ["./src/renderer/**/*.vue", "./src/assets/styles/**/*.sass"],
+export default {
+	content: {
+		relative: true,
+		files: ["./src/renderer/index.html", "./src/renderer/**/*.vue"],
+	},
 	theme: {
 		extend: {
+			height: {
+				topbar: "3rem",
+			},
 			width: {
 				50: "50%",
 			},
 			borderRadius: {
-				1: "1rem",
+				sm: "0.25rem",
+				md: "0.375rem",
+				lg: "0.5rem",
+				xl: "0.75rem",
 			},
 		},
 	},
