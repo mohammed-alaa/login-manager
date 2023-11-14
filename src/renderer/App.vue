@@ -1,8 +1,10 @@
 <template>
-	<main class="main relative h-screen">
+	<main class="main relative min-h-screen">
 		<AppHeader />
 		<AppLoading />
-		<router-view />
+		<div class="wrapper">
+			<router-view />
+		</div>
 	</main>
 </template>
 
