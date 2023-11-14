@@ -1,115 +1,91 @@
+<script setup lang="ts">
+import { computed } from "vue"
+const emits = defineEmits(["update:modelValue", "focus"])
+
+type FormInputProps = {
+	type?: "text" | "number" | "password" | "email" | string
+	id?: string
+	label?: string
+	modelValue: string | number
+	placeholder?: string
+	readonly?: boolean
+	error?: string
+	isSubmitted?: boolean
+	rounded?: "sm" | "md" | "lg" | "xl"
+}
+
+const props = withDefaults(defineProps<FormInputProps>(), {
+	id: "",
+	label: "",
+	placeholder: "",
+	type: "text",
+	readonly: false,
+	error: "",
+	isSubmitted: false,
+	rounded: "md",
+})
+
+const modelValue = computed({
+	get: () => props.modelValue,
+	set: (value) => emits("update:modelValue", value),
+})
+
+const isError = computed(() => !!props.error?.length)
+const roundedComputed = computed(() => ({
+	"rounded-sm": props.rounded === "sm",
+	"rounded-md": props.rounded === "md",
+	"rounded-lg": props.rounded === "lg",
+	"rounded-xl": props.rounded === "xl",
+}))
+</script>
+
 <template>
-	<div :class="`w-full ${!nomargins ? 'mt-3 mb-4' : ''}`">
-		<slot v-if="!nolabel" name="label" :for="id">
-			<label :for="id" class="text-white mb-2">
-				{{ label }}
+	<div>
+		<template v-if="label || $slots.label">
+			<label :for="id" class="block text-white cursor-pointer mb-2">
+				<slot name="label" :for="id">
+					{{ label }}
+				</slot>
 			</label>
-		</slot>
+		</template>
 		<input
 			:id="id"
-			class="block w-full"
+			v-model="modelValue"
+			:type="type"
+			:readonly="readonly"
+			:placeholder="placeholder"
 			:class="[
-				`form-control-${size}`,
+				'form-input block w-full py-2 px-4 transition ease-in-out ring-0 focus:ring-2 focus:ring-blue-500 text-white',
 				{
-					'form-control-plaintext': readonly,
-					'is-invalid': isSubmitted && error,
-					'is-valid': isSubmitted && !error,
+					...roundedComputed,
+					'ring-red-500': isError,
+					'ring-green-500': !isError,
 				},
 			]"
-			:type="type"
-			:value="modelValue"
-			:placeholder="placeholder"
-			:readonly="readonly"
-			@input="$emit('update:modelValue', $event.target.value)"
 			@focus="$emit('focus', $event)"
 		/>
-		<div class="mt-2">
-			<slot name="default" />
-		</div>
+		<template v-if="isError">
+			<div class="text-red-500 text-sm mt-2">
+				{{ error }}
+			</div>
+		</template>
 	</div>
 </template>
 
-<script setup>
-defineProps({
-	type: {
-		type: String,
-		required: false,
-		default: "text",
-	},
-	id: {
-		type: String,
-		required: false,
-		default: "",
-	},
-	label: {
-		type: String,
-		required: false,
-		default: "",
-	},
-	modelValue: {
-		type: String,
-		required: false,
-		default: "",
-	},
-	nolabel: {
-		type: Boolean,
-		required: false,
-		default: false,
-	},
-	placeholder: {
-		type: String,
-		required: false,
-		default: "",
-	},
-	size: {
-		type: String,
-		required: false,
-		default: "lg",
-	},
-	readonly: {
-		type: Boolean,
-		required: false,
-		default: false,
-	},
-	nomargins: {
-		type: Boolean,
-		required: false,
-		default: false,
-	},
-	error: {
-		type: Boolean,
-		required: false,
-		default: false,
-	},
-	isSubmitted: {
-		type: Boolean,
-		required: false,
-		default: false,
-	},
-})
-
-defineEmits(["update:modelValue", "focus"])
-</script>
-
 <style scoped lang="sass">
-$form-control-placeholder-color: #bbb
+$form-control-placeholder-color: #888
 $form-control-focus-color: #e6e6e6
 $form-control-focus-background-color: #141414
 
-.form-control
-	&, &.form-control-plaintext
-		background-color: var(--main-background-color)
-		color: var(--color-gray)
+.submitted .form-input
+	@apply ring-2
 
-		&:not(.is-invalid, .is-valid)
-			border-color: var(--main-border-color)
-	&.form-control-plaintext
-		padding: 0.375rem 0.75rem
-		border-width: 1px
+.form-input
+	background-color: #{$form-control-focus-background-color}
 	&:focus
 		color: #{$form-control-focus-color}
 		background-color: #{$form-control-focus-background-color}
-		box-shadow: none
+		@apply outline-0
 	&::-webkit-input-placeholder
 		color: #{$form-control-placeholder-color}
 </style>

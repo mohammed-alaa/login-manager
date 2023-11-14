@@ -16,7 +16,10 @@
 			"@/*": ["./*"],
 			"@components/*": ["./components/*.vue"],
 			"@utils": ["./utils"],
-			"@store": ["./store"]
+			"@store": ["./store"],
+			// "@types": ["./types.ts"],
+			"@schemas": ["./schemas.ts"],
+			"@globalTypes": ["../types.ts"]
 		},
 		"lib": ["esnext", "dom", "dom.iterable", "scripthost"],
 		"types": ["vite/client"],

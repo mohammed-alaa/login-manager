@@ -3,14 +3,21 @@ import { URL } from "url"
 import getRawBody from "raw-body"
 import { debug } from "@utils"
 import { Request, Response, Route, ResponseFunction } from "@types"
-// import retrieveLogins from "@routes/retrieveLogins"
+
+import retrieveLogins from "@routes/logins/retrieveLogins"
 import retrieveSettings from "@routes/settings/retrieveSettings"
 import updateSetting from "@routes/settings/updateSetting"
+import install from "@routes/install"
 
 let _server: http.Server | null = null
 const port = import.meta.env.MAIN_VITE_SERVER_PORT ?? 3000
 
 const _routes: Route[] = [
+	{
+		path: "/install",
+		method: "POST",
+		handler: install,
+	},
 	{
 		path: "/settings",
 		method: "GET",
@@ -21,11 +28,11 @@ const _routes: Route[] = [
 		method: "PUT",
 		handler: updateSetting,
 	},
-	// {
-	// 	path: "/logins",
-	// 	method: "GET",
-	// 	handler: retrieveLogins,
-	// },
+	{
+		path: "/logins",
+		method: "GET",
+		handler: retrieveLogins,
+	},
 ]
 
 const response: ResponseFunction = (res, statusCode, data = null) => {
@@ -116,7 +123,6 @@ export function deInitServer() {
 	}
 
 	debug("Server shutting down")
-	_server?.closeAllConnections()
-	_server?.close()
+	_server.close()
 	_server = null
 }

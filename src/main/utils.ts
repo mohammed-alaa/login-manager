@@ -7,19 +7,19 @@ import { getLogger } from "./logger"
 const FILE_DATABASE = "data.json"
 const FILE_SETTINGS = "settings.json"
 
-const encryptPassPhrase = (passPhrase) => {
+export const encryptPassPhrase = (passPhrase: string) => {
 	return hashSync(passPhrase, genSaltSync(10))
 }
 
-const validatePassPhrase = (passPhrase) => {
+const validatePassPhrase = (passPhrase: string) => {
 	return compareSync(passPhrase, process.appSettings.hashedPassPhrase)
 }
 
-const encryptPassword = (passPhrase, plainPassword) => {
+const encryptPassword = (passPhrase: string, plainPassword) => {
 	return encrypt(passPhrase, plainPassword)
 }
 
-const decryptPassword = (passPhrase, encryptedPassword) => {
+const decryptPassword = (passPhrase: string, encryptedPassword) => {
 	return decrypt(passPhrase, encryptedPassword)
 }
 

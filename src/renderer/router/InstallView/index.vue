@@ -1,111 +1,93 @@
-<template>
-	<div class="validate-phrase">
-		<div class="validate-phrase-container text-white">
-			<div class="container">
-				<h1 class="text-center text-white mb-3">
-					<AppIcon icon="user-crown" />
-					<span class="ms-1">Enter Master Key</span>
-				</h1>
-				<transition-group name="swap">
-					<AppAlertVue
-						v-if="
-							isMasterPasswordSubmitted && isMasterPasswordError
-						"
-						type="danger"
-						alert-text="Keys don't match."
-					/>
-					<AppAlertVue
-						v-if="
-							isMasterPasswordSubmitted && !isMasterPasswordError
-						"
-						type="success"
-						alert-text="Master 🔑 has been saved!"
-					/>
-				</transition-group>
-				<form @submit.prevent="formSubmit">
-					<FormInput id="password" v-model="passPhrase" type="text">
-						<template #label>
-							<div class="text-white">
-								<AppIcon icon="user-crown" />
-								<span class="ms-1">Enter the key</span>
-							</div>
-						</template>
-					</FormInput>
-					<FormInput
-						id="password"
-						v-model="confirmedPassPhrase"
-						type="text"
-					>
-						<template #label>
-							<div class="text-white">
-								<AppIcon icon="user-crown" />
-								<span class="ms-1">Confirm the key</span>
-							</div>
-						</template>
-					</FormInput>
-					<AppButton
-						theme="primary"
-						type="submit"
-						:loading="isLoading"
-						text="Save the 🔑"
-						class="w-100"
-						@click.prevent="formSubmit"
-					/>
-				</form>
-			</div>
-		</div>
-	</div>
-</template>
-
-<script setup>
-import { ref, computed } from "vue"
+<script setup lang="ts">
+import { reactive, computed } from "vue"
 import { useRouter } from "vue-router"
-import { useStore } from "vuex"
+import store from "@store"
+import AppForm from "@components/AppForm"
 import FormInput from "@components/FormInput"
 import AppButton from "@components/AppButton"
-import AppAlertVue from "@components/AppAlert"
 import AppIcon from "@components/AppIcon"
 
-const store = useStore()
 const router = useRouter()
-const isMasterPasswordSubmitted = ref(false)
-const isMasterPasswordError = ref(false)
-const passPhrase = ref("")
-const confirmedPassPhrase = ref("")
 
-const isLoading = computed(() => store.getters.getIsLoading)
-const verifyPassword = computed(() => {
-	return (
-		passPhrase.value.trim().length > 0 &&
-		passPhrase.value === confirmedPassPhrase.value
-	)
+const installForm = reactive({
+	data: {
+		passPhrase: "43mBcn8gqkXndZk6",
+		confirmedPassPhrase: "",
+	},
+	errors: {
+		passPhrase: "",
+		confirmedPassPhrase: "",
+	},
 })
 
+const isLoading = computed(() => store.getters.getIsLoading)
+
+const resetErrors = () => {
+	installForm.errors.passPhrase = ""
+	installForm.errors.confirmedPassPhrase = ""
+}
+
 const formSubmit = async () => {
-	isMasterPasswordSubmitted.value = true
-	isMasterPasswordError.value = false
-	if (verifyPassword.value) {
-		await store.dispatch("createPassPhrase", passPhrase.value)
-		isMasterPasswordError.value = false
+	resetErrors()
+
+	try {
+		await store.createPassPhrase(installForm.data)
 		setTimeout(() => router.replace({ name: "PassPhrase" }), 1000)
-	} else {
-		isMasterPasswordError.value = true
+	} catch (error: any) {
+		const { errors } = error
+		installForm.errors.passPhrase = errors.passPhrase ?? ""
+		installForm.errors.confirmedPassPhrase =
+			errors.confirmedPassPhrase ?? ""
 	}
 }
 </script>
 
-<style scoped lang="sass">
-.validate-phrase
-    display: flex
-    flex-direction: column
-    justify-content: center
-    align-items: center
-    height: calc(100vh - var(--app-header-min-height))
+<template>
+	<div class="h-full flex items-center justify-center">
+		<div class="validate-phrase-container border rounded-lg p-8 w-50">
+			<h1 class="text-center text-white mb-4">
+				<AppIcon icon="settings" />
+				<span>Install</span>
+			</h1>
+			<AppForm @submit="formSubmit">
+				<FormInput
+					id="passPhrase"
+					v-model="installForm.data.passPhrase"
+					class="mb-4"
+					:error="installForm.errors.passPhrase"
+				>
+					<template #label>
+						<AppIcon icon="user-star" />
+						<span>Enter the key</span>
+					</template>
+				</FormInput>
+				<FormInput
+					id="confirmedPassPhrase"
+					v-model="installForm.data.confirmedPassPhrase"
+					class="mb-4"
+					:error="installForm.errors.confirmedPassPhrase"
+					placeholder="Has to be the same as above"
+				>
+					<template #label>
+						<AppIcon icon="user-star" />
+						<span>Confirm the key</span>
+					</template>
+				</FormInput>
+				<AppButton
+					block
+					type="submit"
+					theme="primary"
+					text="Save the 🔑"
+					:loading="isLoading"
+				/>
+			</AppForm>
+		</div>
+	</div>
+</template>
 
-    .validate-phrase-container
-        background-color: var(--secondary-background-color)
-        border: 1px solid var(--main-border-color)
-        box-shadow: 0 0 .3rem var(--main-border-color)
-        border-radius: 1rem
-        padding: 4rem
+<style scoped lang="sass">
+.validate-phrase-container
+    background-color: var(--secondary-background-color)
+    border-color: var(--main-border-color)
+    box-shadow: 0 0 .3rem var(--main-border-color)
 </style>

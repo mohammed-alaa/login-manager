@@ -1,8 +1,19 @@
 import { reactive, computed } from "vue"
 // import { createStore } from "vuex"
 import axios from "@/plugins/axios"
+import type { LoginList, Settings, InstallForm } from "@globalTypes"
 
-const state = reactive({
+type StateType = {
+	isLoading: boolean
+	logins: LoginList[]
+	activeLogin: string | number
+	activeLoginPassword: string
+	mode: string
+	searchText: string
+	appSettings: Settings | object
+}
+
+const state = reactive<StateType>({
 	isLoading: false,
 	logins: [],
 	activeLogin: "-1",
@@ -50,7 +61,8 @@ export default reactive({
 	// 	},
 	// },
 	init: function () {
-		this.retrieveAppSettings()
+		// this.retrieveAppSettings()
+		// this.retrieveLogins()
 	},
 	retrieveAppSettings: function () {
 		axios
@@ -62,25 +74,41 @@ export default reactive({
 				console.log("error", error)
 			})
 	},
+	retrieveLogins: function () {
+		axios
+			.get("/logins")
+			.then((response) => {
+				this.state.logins = response.data.logins
+				console.log("Logins", response.data.logins)
+			})
+			.catch((error) => {
+				console.log("error", error)
+			})
+	},
+	createPassPhrase: function (data: InstallForm): Promise<void> {
+		return new Promise((resolve, reject) => {
+			axios
+				.post("/install", data)
+				.then(() => resolve())
+				.catch((error) => reject(error.response.data))
+		})
+	},
+	// dispatchEvent: function ({ eventName, params = null, response = true }) {
+	// 	if (response) {
+	// 		return new Promise((resolve) => {
+	// 			this.state.isLoading = true
+	// 			window.ipcRenderer
+	// 				.invoke(eventName, params)
+	// 				.then((eventResult) => {
+	// 					this.state.isLoading = false
+	// 					resolve(eventResult)
+	// 				})
+	// 		})
+	// 	} else {
+	// 		window.ipcRenderer.send(eventName)
+	// 	}
+	// },
 	// actions: {
-	// 	dispatchEvent(
-	// 		{ commit },
-	// 		{ eventName, params = null, response = true }
-	// 	) {
-	// 		if (response) {
-	// 			return new Promise((resolve) => {
-	// 				commit("isLoading", true)
-	// 				window.ipcRenderer
-	// 					.invoke(eventName, params)
-	// 					.then((eventResult) => {
-	// 						commit("isLoading", false)
-	// 						resolve(eventResult)
-	// 					})
-	// 			})
-	// 		} else {
-	// 			window.ipcRenderer.send(eventName)
-	// 		}
-	// 	},
 	// 	maximizeApplication({ dispatch }) {
 	// 		dispatch("dispatchEvent", {
 	// 			eventName: "maximize-application",
@@ -104,21 +132,6 @@ export default reactive({
 	// 			dispatch("dispatchEvent", {
 	// 				eventName: "validate-passphrase",
 	// 				params: { passPhrase },
-	// 			}).then(resolve)
-	// 		})
-	// 	},
-	// 	createPassPhrase({ dispatch }, passPhrase) {
-	// 		return new Promise((resolve) => {
-	// 			dispatch("dispatchEvent", {
-	// 				eventName: "create-passphrase",
-	// 				params: { passPhrase },
-	// 			}).then(resolve)
-	// 		})
-	// 	},
-	// 	validateInstalltion({ dispatch }) {
-	// 		return new Promise((resolve) => {
-	// 			dispatch("dispatchEvent", {
-	// 				eventName: "validate-installation",
 	// 			}).then(resolve)
 	// 		})
 	// 	},

@@ -3,7 +3,13 @@
 		<b>{{ iconName }}</b>
 	</template>
 	<template v-else>
-		<component :is="iconSvg" />
+		<component
+			:is="iconSvg"
+			:class="[
+				`inline align-text-top text-${size}`,
+				{ 'ms-2': startSpace, 'me-2': endSpace },
+			]"
+		/>
 	</template>
 </template>
 
@@ -18,6 +24,14 @@ const props = defineProps({
 	size: {
 		type: String,
 		default: "md",
+	},
+	startSpace: {
+		type: Boolean,
+		default: false,
+	},
+	endSpace: {
+		type: Boolean,
+		default: true,
 	},
 })
 
