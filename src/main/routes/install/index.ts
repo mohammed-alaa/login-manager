@@ -1,30 +1,30 @@
-import { reportError, encryptPassPhrase } from "@utils"
+import { reportError, encryptPrimaryPassword } from "@utils"
 import type { ResponseHandler, InstallForm } from "@types"
 import { installFormSchema } from "@schemas"
 import { updateSetting } from "@repositories/settings"
 
 const handle: ResponseHandler = async (res, response) => {
 	const body: InstallForm = res.req.body
-	const passPhrase = body.passPhrase
+
 	try {
-		installFormSchema.parse({
-			passPhrase,
-			confirmedPassPhrase: body.confirmedPassPhrase,
-		})
+		installFormSchema.parse(body)
 	} catch (error: any) {
 		const errors = error.format()
 		response(res, 422, {
 			errors: {
-				passPhrase: errors.passPhrase?._errors?.[0] ?? "",
-				confirmedPassPhrase:
-					errors.confirmedPassPhrase?._errors?.[0] ?? "",
+				primaryPassword: errors.primaryPassword?._errors?.[0] ?? "",
+				confirmedPrimaryPassword:
+					errors.confirmedPrimaryPassword?._errors?.[0] ?? "",
 			},
 		})
+		return
 	}
 
 	try {
-		process.env.PASS_PHRASE = passPhrase
-		await updateSetting("hashedPassPhrase", encryptPassPhrase(passPhrase))
+		await updateSetting(
+			"hashedPrimaryPassword",
+			encryptPrimaryPassword(body.primaryPassword)
+		)
 		response(res, 204, {})
 	} catch (error: any) {
 		reportError(error)

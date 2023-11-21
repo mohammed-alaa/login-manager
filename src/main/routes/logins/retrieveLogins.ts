@@ -8,7 +8,7 @@ const handle: ResponseHandler = (res, response) => {
 			response(res, 200, { logins })
 		})
 		.catch((error: any) => {
-			reportError("Error while retrieving settings", {
+			reportError("Error while retrieving logins", {
 				message: error.message,
 			})
 

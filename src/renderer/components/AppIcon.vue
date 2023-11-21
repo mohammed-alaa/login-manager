@@ -1,46 +1,33 @@
-<template>
-	<template v-if="error">
-		<b>{{ iconName }}</b>
-	</template>
-	<template v-else>
-		<component
-			:is="iconSvg"
-			:class="[
-				`inline align-text-top text-${size}`,
-				{ 'ms-2': startSpace, 'me-2': endSpace },
-			]"
-		/>
-	</template>
-</template>
+<script setup lang="ts">
+import { computed } from "vue"
 
-<script setup>
-import { ref, computed, defineAsyncComponent } from "vue"
+interface IconProps {
+	icon: string
+	size?: false | "sm" | "md" | "lg"
+	startSpace?: boolean
+	endSpace?: boolean
+	animated?: boolean
+}
 
-const props = defineProps({
-	icon: {
-		type: String,
-		required: true,
-	},
-	size: {
-		type: String,
-		default: "md",
-	},
-	startSpace: {
-		type: Boolean,
-		default: false,
-	},
-	endSpace: {
-		type: Boolean,
-		default: true,
-	},
+const props = withDefaults(defineProps<IconProps>(), {
+	size: false,
+	startSpace: false,
+	endSpace: false,
+	animated: false,
 })
 
-const iconName = computed(() => props.icon)
-
-const error = ref(false)
-const iconSvg = defineAsyncComponent(() =>
-	import(`@icons/${iconName.value}`).catch(() => () => {
-		error.value = true
-	})
-)
+const sizeComputed = computed(() => ({
+	"text-sm": props.size === "sm",
+	"text-md": props.size === "md",
+	"text-lg": props.size === "lg",
+}))
 </script>
+
+<template>
+	<i
+		:class="[
+			`ti ti-${icon} ${animated ? 'inline-block' : 'inline'}`,
+			{ ...sizeComputed, 'ms-1': startSpace, 'me-1': endSpace },
+		]"
+	/>
+</template>

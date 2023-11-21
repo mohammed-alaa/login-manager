@@ -1,8 +1,8 @@
+@import "@tabler/icons-webfont/tabler-icons.min.css"
+
 @tailwind base
 @tailwind components
 @tailwind utilities
-
-@import './variables'
 
 @layer base
 	h1
@@ -14,58 +14,139 @@
 	h3
 		@apply font-bold
 		@apply text-lg
+	button
+		-webkit-app-region: no-drag
 
-main
+body
+	@apply bg-body
 	font-family: 'Gantari', sans-serif
-	background-color: var(--main-background-color) !important
+
+.app-header,
+.search,
+.login-header,
+.login-body
+	@apply bg-main
+
+.login-view
+	grid-template-rows: theme('width.login-list') auto
+	grid-template-columns: theme('height.login-list') auto
+	grid-template-areas: "search info" "list body"
+
+	.search
+		grid-area: search
+
+	.login-header
+		grid-area: info
+
+	.login-list
+		grid-area: list
+
+	.login-body-wrapper
+		grid-area: body
 
 .app-header
 	-webkit-app-region: drag !important
-	border-bottom: 1px solid var(--main-border-color)
-	background-color: var(--main-background-color)
-	padding-left: var(--main-start-offset)
+	@apply border-b border-main
+	@apply ps-4
 	@apply h-topbar
 
 	.title
 		-webkit-app-region: drag !important
-		user-select: none
-		font-size: 1.5rem
-		line-height: 1.5
+		@apply select-none
 
-.wrapper
-	height: calc(100vh - theme('height.topbar'))
+.main
+	--app-available-height: 100vh
 
-.ms-2
-	margin-left: .3rem
+	&.appHeader
+		--app-available-height: calc(100vh - theme('height.topbar'))
 
-.w-80
-	width: 80% !important
+.h-fullscreen
+	height: var(--app-available-height)
+
+.login-body
+	@apply overflow-y-auto
+	@apply rounded-lg
+	@apply border
+	@apply border-main
+
+	.website .head > i
+		color: #2196f3
+	.username .head > i
+		color: #47cc47
+	.password .head > i
+		color: #bf772d
+
+.settings
+	.settings-header
+		@apply h-settings-header-height
+	.settings-body
+		min-height: calc(var(--app-available-height) - theme('height.settings-header-height'))
+
+.btn
+	&.btn-primary
+		@apply border-btn-primary
+		&.btn-text
+			@apply border-transparent
+		&.btn-outlined, &.btn-text
+			@apply text-btn-primary-outlined
+		&.btn-filled, &.btn-outlined:not(:disabled):hover, &.btn-text:not(:disabled):hover
+			@apply text-btn-primary-filled bg-btn-primary
+	&.btn-danger
+		@apply border-btn-danger
+		&.btn-text
+			@apply border-transparent
+		&.btn-outlined, &.btn-text
+			@apply text-btn-danger-outlined
+		&.btn-filled, &.btn-outlined:not(:disabled):hover, &.btn-text:not(:disabled):hover
+			@apply text-btn-danger-filled bg-btn-danger
+	&.btn-secondary
+		@apply border-btn-secondary
+		&.btn-text
+			@apply border-transparent
+		&.btn-outlined, &.btn-text
+			@apply text-btn-secondary-outlined
+		&.btn-filled, &.btn-outlined:not(:disabled):hover, &.btn-text:not(:disabled):hover
+			@apply text-btn-secondary-filled bg-btn-secondary
+	&.btn-warning
+		@apply border-btn-warning
+		&.btn-text
+			@apply border-transparent
+		&.btn-outlined, &.btn-text
+			@apply text-btn-warning-outlined
+		&.btn-filled, &.btn-outlined:not(:disabled):hover, &.btn-text:not(:disabled):hover
+			@apply text-btn-warning-filled bg-btn-warning
 
 .fade-enter-active, .fade-leave-active
-	transition: all 200ms ease-in-out
+	@apply transition ease-in-out
 
 .fade-enter-from, .fade-leave-to
-	opacity: 0
+	@apply opacity-0
 
 .swap-move, .swap-enter-active, .swap-leave-active
 	transition: all 200ms cubic-bezier(0.55, 0, 0.1, 1)
 
 .swap-enter-from, .swap-leave-to
-	opacity: 0
+	@apply opacity-0
 	transform: scaleY(0)
 
 .swap-leave-active
 	z-index: -1
-	position: absolute
+	@apply absolute
 
 ::-webkit-scrollbar
-	width: .1rem
+	@apply w-2
+	@apply transition
 
 ::-webkit-scrollbar-track
-	background-color: rgba(0, 0, 0, 0)
+	@apply bg-body
+	@apply rounded-lg
 
 ::-webkit-scrollbar-thumb
-	background-color: #4b5683
+	@apply rounded-lg
+	@apply bg-primary
 
-::-webkit-scrollbar-thumb:hover
-	background-color: #6172b9
+	&:hover
+		@apply bg-primary/70
+
+input::-webkit-inner-spin-button
+	@apply hidden

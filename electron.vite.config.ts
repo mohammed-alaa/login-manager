@@ -6,7 +6,6 @@ import {
 import { resolve } from "path"
 import vue from "@vitejs/plugin-vue"
 import eslintPlugin from "vite-plugin-eslint"
-import svgLoader from "vite-svg-loader"
 
 export default defineConfig({
 	main: {
@@ -90,9 +89,6 @@ export default defineConfig({
 				emitWarning: true,
 				emitError: true,
 			}),
-			svgLoader({
-				defaultImport: "component",
-			}),
 		],
 		resolve: {
 			extensions: [".js", ".ts", ".vue"],
@@ -109,10 +105,10 @@ export default defineConfig({
 					),
 				},
 				{
-					find: /^@views\/(.*)$/,
+					find: "@views",
 					replacement: resolve(
 						__dirname,
-						"./src/renderer/router/$1/index.vue"
+						"./src/renderer/router/views"
 					),
 				},
 				{
@@ -145,8 +141,8 @@ export default defineConfig({
 					replacement: resolve(__dirname, "./src/types.ts"),
 				},
 				{
-					find: "@schemas",
-					replacement: resolve(__dirname, "./src/renderer/schemas.ts"),
+					find: "@types",
+					replacement: resolve(__dirname, "./src/renderer/types.ts"),
 				},
 			],
 		},

@@ -6,17 +6,106 @@ export default {
 	},
 	theme: {
 		extend: {
+			colors: {
+				white: "#fff",
+				gray: "#ccc",
+				alert: {
+					danger: "#ffa9a9",
+					success: "#62ffb7",
+				},
+				btn: {
+					primary: {
+						filled: "#e5d6ef",
+						outlined: "#5e35b1",
+					},
+					danger: {
+						filled: "#ffd8d8",
+						outlined: "#e22727",
+					},
+					secondary: {
+						filled: "#beded9",
+						outlined: "#0f7d6b",
+					},
+					warning: {
+						filled: "#211b0b",
+						outlined: "#eab208",
+					},
+				},
+			},
+			backgroundColor: {
+				body: "#131417",
+				main: "#1e1f24",
+				secondary: "#191a1e",
+				input: "#26272d",
+				focus: "#1a1b21",
+				primary: "#5e35b1",
+				alert: {
+					danger: "#c5141433",
+					success: "#1146266e",
+				},
+				btn: {
+					primary: "#5e35b1",
+					danger: "#b11111",
+					secondary: "#004d40",
+					warning: "#eab208",
+				},
+				switch: {
+					on: "#5e35b1",
+					off: "#32343c",
+					circle: {
+						on: "#fff",
+						off: "#fff",
+					},
+				},
+			},
+			borderColor: {
+				main: "#2e3235",
+				focus: "#3d4156",
+				alert: {
+					danger: "#7b2a33",
+					success: "#205d41",
+				},
+				btn: {
+					primary: "#5e35b1",
+					danger: "#b11111",
+					secondary: "#004d40",
+					warning: "#eab208",
+				},
+				switch: {
+					circle: {
+						on: "#fff",
+						off: "#bdbdbd",
+					},
+				},
+			},
+			ringColor: {
+				"switch-focus": "#a478ff",
+			},
 			height: {
 				topbar: "3rem",
+				"login-list": "300px",
+				"settings-header-height": "3.5rem",
 			},
 			width: {
 				50: "50%",
+				80: "80%",
+				"login-list": "4.5rem",
+			},
+			maxWidth: {
+				50: "50%",
+				80: "80%",
 			},
 			borderRadius: {
 				sm: "0.25rem",
 				md: "0.375rem",
 				lg: "0.5rem",
 				xl: "0.75rem",
+				circle: "50%",
+			},
+			fontSize: {
+				sm: ["0.875rem", "1.25rem"],
+				md: ["1rem", "1.5rem"],
+				lg: ["1.125rem", "1.75rem"],
 			},
 		},
 	},

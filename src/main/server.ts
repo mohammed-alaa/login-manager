@@ -8,6 +8,11 @@ import retrieveLogins from "@routes/logins/retrieveLogins"
 import retrieveSettings from "@routes/settings/retrieveSettings"
 import updateSetting from "@routes/settings/updateSetting"
 import install from "@routes/install"
+import login from "@routes/login"
+import createLogin from "@routes/logins/createLogin"
+import updateLogin from "@routes/logins/updateLogin"
+import retrieveLogin from "@routes/logins/retrieveLogin"
+import deleteLogin from "@routes/logins/deleteLogin"
 
 let _server: http.Server | null = null
 const port = import.meta.env.MAIN_VITE_SERVER_PORT ?? 3000
@@ -17,6 +22,11 @@ const _routes: Route[] = [
 		path: "/install",
 		method: "POST",
 		handler: install,
+	},
+	{
+		path: "/login",
+		method: "POST",
+		handler: login,
 	},
 	{
 		path: "/settings",
@@ -32,6 +42,26 @@ const _routes: Route[] = [
 		path: "/logins",
 		method: "GET",
 		handler: retrieveLogins,
+	},
+	{
+		path: "/logins",
+		method: "POST",
+		handler: createLogin,
+	},
+	{
+		path: "/logins?",
+		method: "GET",
+		handler: retrieveLogin,
+	},
+	{
+		path: "/logins?",
+		method: "PUT",
+		handler: updateLogin,
+	},
+	{
+		path: "/logins?",
+		method: "DELETE",
+		handler: deleteLogin,
 	},
 ]
 
@@ -82,8 +112,9 @@ const router = async (req: Request, res: Response) => {
 	}
 
 	const requestURL = new URL(req.url, `http://${req.headers.host}`)
-	const path = requestURL.pathname
+	const path = `${requestURL.pathname}${requestURL.search?.[0] ?? ""}`
 	const method = req.method.toUpperCase()
+	req.query = requestURL.searchParams
 
 	debug(`Request received`, {
 		path,
@@ -94,13 +125,13 @@ const router = async (req: Request, res: Response) => {
 		return response(res, 200, { message: "OK" })
 	} else if (!["GET", "DELETE"].includes(method)) {
 		req.body = await parseBody(req)
-		res.req = req
 	}
 
-	const route = _routes.find(
-		(route) => route.path === path && route.method === method
-	)
+	const route = _routes.find((route: Route) => {
+		return route.path === path && route.method === method
+	})
 
+	res.req = req
 	if (route) {
 		route.handler(res, response)
 	} else {

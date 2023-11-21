@@ -1,60 +1,39 @@
-<template>
-	<transition-group name="swap">
-		<template v-if="computedFilteredLogins.length">
-			<div class="login-list flex flex-col gap-2 p-2">
-				<LoginItem
-					v-for="login in filteredLogins()"
-					:key="login.id"
-					:is-active="isLoginActive(login.id)"
-					:login="login"
-					@click="activeLoginChange(login.id)"
-				/>
-			</div>
-		</template>
-		<template v-else>
-			<div
-				class="empty-logins-list h-full flex flex-col items-center justify-center"
-			>
-				<div class="text-white">No logins found</div>
-				<p class="body mb-0">
-					There are no results matching your search.
-				</p>
-			</div>
-		</template>
-	</transition-group>
-</template>
-
-<script setup>
+<script setup lang="ts">
 import { computed } from "vue"
-import { useStore } from "vuex"
-import { filterLogins } from "@utils"
+import store from "@store"
 import LoginItem from "@components/LoginItem"
 
-const store = useStore()
-
-const searchLogin = computed(() => store.getters.getSearchText)
 const logins = computed(() => store.getters.getLoginList)
-const activeLogin = computed(() => store.getters.getActiveLogin)
-const computedFilteredLogins = computed(() =>
-	filterLogins(logins.value, searchLogin.value)
-)
+const loginsNumber = computed(() => store.getters.loginsNumber)
+const getActiveLoginId = computed({
+	get: () => store.getters.getActiveLoginId,
+	set: (value) => (store.getters.getActiveLoginId = value),
+})
 
-const isLoginActive = (loginId) => activeLogin.value === loginId
-const filteredLogins = () => computedFilteredLogins.value
-const activeLoginChange = (loginId) =>
-	store.dispatch("activeLoginChange", loginId)
+const isLoginActive = (loginId: number) => loginId === getActiveLoginId.value
+const retrieveLogin = (loginId: number) => (getActiveLoginId.value = loginId)
 </script>
 
-<style lang="sass" scoped>
-.login-list
-	grid-area: list
-	background-color: var(--main-background-color)
-	border-right: 1px solid var(--main-border-color)
-	overflow: hidden auto !important
-
-.empty-logins-list
-	font-size: 2.25rem
-	.body
-		font-size: 1.05rem
-		color: var(--color-gray)
-</style>
+<template>
+	<div
+		class="login-list border-e border-main py-2 px-4"
+		:class="{
+			'flex flex-col overflow-y-auto gap-2': loginsNumber,
+		}"
+	>
+		<transition-group name="swap">
+			<template v-if="loginsNumber">
+				<template v-for="login in logins" :key="login.id">
+					<LoginItem
+						:is-active="isLoginActive(login.id)"
+						:login="login"
+						@click="retrieveLogin(login.id)"
+					/>
+				</template>
+			</template>
+			<template v-else>
+				<h3 class="text-white py-8 text-center">No logins found.</h3>
+			</template>
+		</transition-group>
+	</div>
+</template>

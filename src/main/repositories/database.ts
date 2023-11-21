@@ -6,6 +6,105 @@ import { debug, reportError } from "@utils"
 let _dbInstance: sqlite.Database | null = null
 export type valueTypeValues = "string" | "number" | "boolean" | "json"
 
+export const runQuery = (
+	query: string,
+	params: any[] = []
+): Promise<sqlite.RunResult> => {
+	return new Promise((resolve, reject) => {
+		getDatabaseInstanceOrFail()?.run(query, params, function (error) {
+			if (error) {
+				reportError("Error running database query", {
+					message: error.message,
+					context: {
+						query,
+						params,
+					},
+				})
+				reject(error)
+			} else {
+				resolve(this)
+			}
+		})
+	})
+}
+
+const createDatabaseTablesAsync = async () => {
+	try {
+		await runQuery(
+			"CREATE TABLE IF NOT EXISTS `logins` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `website` TEXT NOT NULL, `username` TEXT NOT NULL, `password` TEXT NOT NULL)"
+		)
+		debug("Database table `logins` created")
+	} catch (error: any) {
+		throw new Error("Error creating `logins` table", error)
+	}
+
+	try {
+		await runQuery(
+			"CREATE INDEX IF NOT EXISTS `website` ON `logins` (`website`)"
+		)
+		debug("Database index `website` created")
+	} catch (error: any) {
+		throw new Error(
+			"Error creating `website` index on `logins` table",
+			error
+		)
+	}
+
+	try {
+		await runQuery(
+			"CREATE INDEX IF NOT EXISTS `username` ON `logins` (`username`)"
+		)
+		debug("Database index `username` created")
+	} catch (error: any) {
+		throw new Error(
+			"Error creating `username` index on `logins` table",
+			error
+		)
+	}
+
+	try {
+		await runQuery(
+			"CREATE TABLE IF NOT EXISTS `settings` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL UNIQUE, `value` TEXT, `defaultValue` TEXT, `type` TEXT NOT NULL);"
+		)
+		debug("Database table `settings` created")
+	} catch (error: any) {
+		throw new Error("Error creating database table settings", error)
+	}
+}
+
+const createDatabaseTablesSync = async (): Promise<void> => {
+	return new Promise((resolve, reject) => {
+		createDatabaseTablesAsync()
+			.then(() => resolve())
+			.catch((error) => reject(error))
+	})
+}
+
+const createDatabaseFile = (appPath: string): Promise<string> => {
+	const dbPath = resolve(appPath, "database.db")
+
+	return new Promise((resolve, reject) => {
+		if (existsSync(dbPath)) {
+			return resolve(dbPath)
+		}
+
+		writeFile(dbPath, "", "utf-8", (error) => {
+			if (error) {
+				reportError("Error while creating database file", {
+					message: error.message,
+					context: {
+						dbPath,
+						appPath,
+					},
+				})
+				reject(error)
+			} else {
+				resolve(dbPath)
+			}
+		})
+	})
+}
+
 export const exportToDatabaseValue = (value: any, type: valueTypeValues) => {
 	switch (type) {
 		case "string":
@@ -46,113 +145,42 @@ export const exportFromDatabaseValue = (
 	}
 }
 
-const createDatabaseTables = () => {
-	_dbInstance?.serialize(() => {
-		_dbInstance
-			?.run(
-				"CREATE TABLE IF NOT EXISTS `logins` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `website` TEXT NOT NULL, `username` TEXT NOT NULL, `password` TEXT NOT NULL)",
-				(error: Error | null) => {
-					if (error) {
-						reportError("Error creating `logins` table", {
-							message: error.message,
-						})
-					} else {
-						debug("Database table `logins` created")
-					}
-				}
-			)
-			?.run(
-				"CREATE INDEX IF NOT EXISTS `website` ON `logins` (`website`)",
-				(error: Error | null) => {
-					if (error) {
-						reportError(
-							"Error creating `website` index on `logins` table",
-							{
+export const initDatabase = (appPath: string): Promise<void> => {
+	return new Promise((resolve, reject) => {
+		createDatabaseFile(appPath)
+			.then((dbFile) => {
+				debug("appPath", appPath)
+				_dbInstance = new sqlite.Database(
+					dbFile,
+					sqlite.OPEN_READWRITE,
+					async (error) => {
+						if (error) {
+							reportError("Error connecting to database", {
 								message: error.message,
+								context: {
+									appPath,
+									dbFile,
+								},
+							})
+							reject(error)
+						} else {
+							try {
+								debug("Database connection established")
+								await createDatabaseTablesSync()
+								debug("Database tables created")
+								resolve()
+							} catch (error: any) {
+								reject(error)
 							}
-						)
-					} else {
-						debug("Database index `website` created")
+						}
 					}
-				}
-			)
-			?.run(
-				"CREATE INDEX IF NOT EXISTS `username` ON `logins` (`username`)",
-				(error: Error | null) => {
-					if (error) {
-						reportError(
-							"Error creating `username` index on `logins` table",
-							{
-								message: error.message,
-							}
-						)
-					} else {
-						debug("Database index `username` created")
-					}
-				}
-			)
-	})
-
-	_dbInstance?.serialize(() => {
-		_dbInstance?.run(
-			"CREATE TABLE IF NOT EXISTS `settings` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL UNIQUE, `value` TEXT, `defaultValue` TEXT, `type` TEXT NOT NULL);",
-			(error: Error | null) => {
-				if (error) {
-					reportError("Error creating database table settings", {
-						message: error.message,
-					})
-				} else {
-					debug("Database table `settings` created")
-				}
-			}
-		)
+				)
+			})
+			.catch((error) => reject(error))
 	})
 }
 
-const createDatabaseFile = (appPath: string) => {
-	const dbPath = resolve(appPath, "database.db")
-
-	if (!existsSync(dbPath)) {
-		writeFile(dbPath, "", "utf-8", (error) => {
-			if (error) {
-				reportError("Error while creating database file", {
-					message: error.message,
-					context: {
-						dbPath,
-						appPath,
-					},
-				})
-			}
-		})
-	}
-
-	return dbPath
-}
-
-export function initDatabase(appPath: string) {
-	const dbFile = createDatabaseFile(appPath)
-	debug("appPath", appPath)
-
-	_dbInstance = new sqlite.Database(
-		dbFile,
-		sqlite.OPEN_READWRITE,
-		(error) => {
-			if (error) {
-				reportError("Error connecting to database", {
-					message: error.message,
-					context: {
-						appPath,
-						dbFile,
-					},
-				})
-			} else {
-				createDatabaseTables()
-			}
-		}
-	)
-}
-
-export function deInitDatabase() {
+export const deInitDatabase = () => {
 	_dbInstance?.close((error) => {
 		if (error) {
 			reportError("Error closing database connection", {
@@ -167,12 +195,10 @@ export function deInitDatabase() {
 	})
 }
 
-export function getDatabaseInstance() {
-	return _dbInstance
-}
+export const getDatabaseInstance = () => _dbInstance
 
-export function getDatabaseInstanceOrFail() {
-	if (!getDatabaseInstance()) {
+export const getDatabaseInstanceOrFail = () => {
+	if (!_dbInstance) {
 		reportError("Database instance is not initialized")
 	}
 

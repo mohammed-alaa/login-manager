@@ -1,91 +1,93 @@
 import { reactive, computed } from "vue"
-// import { createStore } from "vuex"
 import axios from "@/plugins/axios"
-import type { LoginList, Settings, InstallForm } from "@globalTypes"
+import type {
+	StateType,
+	StoreType,
+	GetterType,
+	WindowType,
+	Settings,
+	LoginItem,
+	LoginList,
+	LoginForm,
+	InstallForm,
+	CreateEditFormData,
+	AppInformationType,
+} from "@types"
 
-type StateType = {
-	isLoading: boolean
-	logins: LoginList[]
-	activeLogin: string | number
-	activeLoginPassword: string
-	mode: string
-	searchText: string
-	appSettings: Settings | object
-}
-
-const state = reactive<StateType>({
+const state: StateType = reactive<StateType>({
 	isLoading: false,
 	logins: [],
-	activeLogin: "-1",
-	activeLoginPassword: "",
-	mode: "v",
+	activeLoginId: null,
 	searchText: "",
-	appSettings: {},
+	appInformation: {
+		appName: "",
+		version: "",
+		customAppHeader: false,
+	},
 })
-const getters = {
+
+const getters: GetterType = {
 	getIsLoading: computed(() => state.isLoading),
 	getLoginList: computed(() => state.logins),
-	getActiveLogin: computed(() => state.activeLogin),
-	getActiveLoginPassword: computed(() => state.activeLoginPassword),
-	getMode: computed(() => state.mode),
+	getActiveLoginId: computed({
+		get: () => state.activeLoginId,
+		set: (value: null | number) => (state.activeLoginId = value),
+	}),
 	getSearchText: computed(() => state.searchText),
-	getAppSettings: computed(() => state.appSettings),
+	getAppInformation: computed(() => state.appInformation),
 }
 
-export default reactive({
+const store: StoreType = reactive<StoreType>({
 	state,
 	getters: {
 		...getters,
+		loginsNumber: computed(() => getters.getLoginList.value.length),
+		isActiveLoginValid: computed(
+			() => getters.getActiveLoginId.value !== null
+		),
 	},
-	// mutations: {
-	// 	isLoading(state, status) {
-	// 		state.isLoading = status
-	// 	},
-	// 	retrievelogins(state, logins) {
-	// 		state.logins = logins
-	// 	},
-	// 	updateActiveLoginPassword(state, loginPassword) {
-	// 		state.activeLoginPassword = loginPassword
-	// 	},
-	// 	updateActiveLogin(state, loginId) {
-	// 		state.activeLogin = loginId
-	// 	},
-	// 	setMode(state, modeName) {
-	// 		state.mode = modeName
-	// 	},
-	// 	setSearchText(state, newSearchText) {
-	// 		state.searchText = newSearchText
-	// 	},
-	// 	updateAppSettings(state, appSettings) {
-	// 		state.appSettings = appSettings
-	// 	},
-	// },
 	init: function () {
-		// this.retrieveAppSettings()
-		// this.retrieveLogins()
+		this.checkForAppHeader()
 	},
-	retrieveAppSettings: function () {
-		axios
-			.get("/settings")
-			.then((response) => {
-				console.log("response", response)
-			})
-			.catch((error) => {
-				console.log("error", error)
-			})
+	retrieveAppSettings: function (): Promise<Settings> {
+		return new Promise((resolve, reject) => {
+			axios
+				.get("/settings")
+				.then((response) => resolve(response.data.settings))
+				.catch((error) => reject(error.response.data))
+		})
 	},
-	retrieveLogins: function () {
-		axios
-			.get("/logins")
-			.then((response) => {
-				this.state.logins = response.data.logins
-				console.log("Logins", response.data.logins)
-			})
-			.catch((error) => {
-				console.log("error", error)
-			})
+	updateAppSettings: function (settings: Settings): Promise<Settings> {
+		return new Promise((resolve, reject) => {
+			axios
+				.put("/settings", settings)
+				.then((response) => resolve(response.data.settings))
+				.catch((error) => reject(error.response.data))
+		})
 	},
-	createPassPhrase: function (data: InstallForm): Promise<void> {
+	retrieveLogins: function (): Promise<LoginList> {
+		return new Promise((resolve, reject) => {
+			axios
+				.get("/logins")
+				.then((response) => {
+					this.state.logins = response.data.logins
+					resolve(response.data.logins)
+				})
+				.catch((error) => {
+					console.log("error", error)
+					reject(error)
+				})
+		})
+	},
+	retrieveLogin: function (loginId: number): Promise<LoginItem> {
+		return new Promise((resolve, reject) => {
+			axios
+				.get("/logins", { params: { loginId } })
+				.then(({ data }) => resolve(data.login))
+				.catch((error) => reject(error.response.data))
+		})
+	},
+	install: function (data: InstallForm): Promise<void> {
 		return new Promise((resolve, reject) => {
 			axios
 				.post("/install", data)
@@ -93,156 +95,91 @@ export default reactive({
 				.catch((error) => reject(error.response.data))
 		})
 	},
-	// dispatchEvent: function ({ eventName, params = null, response = true }) {
-	// 	if (response) {
-	// 		return new Promise((resolve) => {
-	// 			this.state.isLoading = true
-	// 			window.ipcRenderer
-	// 				.invoke(eventName, params)
-	// 				.then((eventResult) => {
-	// 					this.state.isLoading = false
-	// 					resolve(eventResult)
-	// 				})
-	// 		})
-	// 	} else {
-	// 		window.ipcRenderer.send(eventName)
-	// 	}
-	// },
-	// actions: {
-	// 	maximizeApplication({ dispatch }) {
-	// 		dispatch("dispatchEvent", {
-	// 			eventName: "maximize-application",
-	// 			response: false,
-	// 		})
-	// 	},
-	// 	exitApplication({ dispatch }) {
-	// 		dispatch("dispatchEvent", {
-	// 			eventName: "exit-application",
-	// 			response: false,
-	// 		})
-	// 	},
-	// 	minimizeApplication({ dispatch }) {
-	// 		dispatch("dispatchEvent", {
-	// 			eventName: "minimize-application",
-	// 			response: false,
-	// 		})
-	// 	},
-	// 	validatePassPhrase({ dispatch }, passPhrase) {
-	// 		return new Promise((resolve) => {
-	// 			dispatch("dispatchEvent", {
-	// 				eventName: "validate-passphrase",
-	// 				params: { passPhrase },
-	// 			}).then(resolve)
-	// 		})
-	// 	},
-	// 	retrieveAppSettings({ dispatch, commit }) {
-	// 		return new Promise((resolve) => {
-	// 			dispatch("dispatchEvent", {
-	// 				eventName: "retrieve-settings",
-	// 			}).then((appSettings) => {
-	// 				commit("updateAppSettings", appSettings)
-	// 				resolve({})
-	// 			})
-	// 		})
-	// 	},
-	// 	updateAppSettings({ dispatch, commit }, newAppSettings) {
-	// 		return new Promise((resolve) => {
-	// 			dispatch("dispatchEvent", {
-	// 				eventName: "update-settings",
-	// 				params: { newAppSettings: { ...newAppSettings } },
-	// 			}).then(() => {
-	// 				commit("updateAppSettings", newAppSettings)
-	// 				resolve({})
-	// 			})
-	// 		})
-	// 	},
-	// 	retrieveLogins({ commit, dispatch }) {
-	// 		dispatch("dispatchEvent", { eventName: "read-logins" }).then(
-	// 			(logins) => {
-	// 				commit("retrievelogins", logins)
+	login: function (data: LoginForm): Promise<void> {
+		return new Promise((resolve, reject) => {
+			axios
+				.post("/login", data)
+				.then(() => resolve())
+				.catch((error) => reject(error.response.data))
+		})
+	},
+	searchLogins: function (searchText: string): Promise<void> {
+		return new Promise((resolve, reject) => {
+			axios
+				.get(`/logins/search/${searchText}`)
+				.then((response) => {
+					this.state.logins = response.data.logins
+					resolve()
+				})
+				.catch((error) => reject(error.response.data))
+		})
+	},
+	clearActiveLoginId: function () {
+		this.state.activeLoginId = null
+	},
+	createNewItem: function (data: CreateEditFormData): Promise<void> {
+		return new Promise((resolve, reject) => {
+			axios
+				.post("/logins", data)
+				.then(() => resolve())
+				.catch((error) => reject(error.response.data))
+		})
+	},
+	updateLogin: function (
+		loginId: number,
+		data: CreateEditFormData
+	): Promise<void> {
+		return new Promise((resolve, reject) => {
+			axios
+				.put("/logins", data, { params: { loginId } })
+				.then(() => resolve())
+				.catch((error) => reject(error.response.data))
+		})
+	},
+	deleteLogin: function (): Promise<void> {
+		return new Promise((resolve, reject) => {
+			if (!this.getters.isActiveLoginValid) {
+				reject()
+			}
 
-	// 				if (logins.length) {
-	// 					dispatch("activeLoginChange", logins[0].id)
-	// 				} else {
-	// 					dispatch("activeLoginChange", "-1")
-	// 				}
-	// 			}
-	// 		)
-	// 	},
-	// 	activeLoginChange({ getters, commit, dispatch }, loginId) {
-	// 		if (getters.getMode === "v") {
-	// 			commit("updateActiveLogin", loginId)
-	// 			dispatch("retrieveLogin")
-	// 		}
-	// 	},
-	// 	setMode({ commit }, modeName) {
-	// 		commit("setMode", modeName)
-	// 	},
-	// 	setEditMode({ dispatch }) {
-	// 		dispatch("setMode", "e")
-	// 	},
-	// 	setDeleteMode({ dispatch }) {
-	// 		dispatch("setMode", "d")
-	// 	},
-	// 	setCreateMode({ dispatch }) {
-	// 		dispatch("activeLoginChange", "-1")
-	// 		dispatch("setMode", "c")
-	// 	},
-	// 	setViewMode({ dispatch, getters }) {
-	// 		const isOldModeCreate = getters.getMode === "c"
-	// 		dispatch("setMode", "v")
-	// 		isOldModeCreate &&
-	// 			dispatch(
-	// 				"activeLoginChange",
-	// 				getters.getLoginList?.[0]?.id || -1
-	// 			)
-	// 	},
-	// 	createNewLogin({ dispatch, getters }, newLogin) {
-	// 		newLogin = {
-	// 			website: newLogin.website,
-	// 			username: newLogin.username,
-	// 			password: newLogin.password,
-	// 		}
-	// 		dispatch("dispatchEvent", {
-	// 			eventName: "create-login",
-	// 			params: { newLoginInformation: newLogin },
-	// 		}).then(() => {
-	// 			dispatch("setViewMode")
-	// 			dispatch("retrieveLogins")
-	// 			dispatch(
-	// 				"activeLoginChange",
-	// 				getters.getLoginList?.[getters.getLoginList.length - 1]
-	// 					?.id || "-1"
-	// 			)
-	// 		})
-	// 	},
-	// 	deleteLogin({ dispatch, getters }) {
-	// 		dispatch("dispatchEvent", {
-	// 			eventName: "delete-login",
-	// 			params: { loginId: getters.getActiveLogin },
-	// 		}).then(() => {
-	// 			dispatch("setViewMode")
-	// 			dispatch("retrieveLogins")
-	// 		})
-	// 	},
-	// 	updateLogin({ dispatch, getters }, newLoginInformation) {
-	// 		const activeLoginId = getters.getActiveLogin
-	// 		newLoginInformation = {
-	// 			website: newLoginInformation.website,
-	// 			username: newLoginInformation.username,
-	// 			password: newLoginInformation.password,
-	// 		}
-	// 		dispatch("dispatchEvent", {
-	// 			eventName: "edit-login",
-	// 			params: { loginId: activeLoginId, newLoginInformation },
-	// 		}).then(() => {
-	// 			dispatch("setViewMode")
-	// 			dispatch("retrieveLogins")
-	// 			dispatch("activeLoginChange", activeLoginId)
-	// 		})
-	// 	},
-	// 	setSearchText({ commit }, newSearchText) {
-	// 		commit("setSearchText", newSearchText)
-	// 	},
-	// },
+			axios
+				.delete("/logins", {
+					params: { loginId: this.getters.getActiveLoginId },
+				})
+				.then(() => {
+					this.retrieveLogins()
+					this.clearActiveLoginId()
+					resolve()
+				})
+				.catch(() => reject())
+		})
+	},
+	dispatchEvent: function (eventName: string, { ...params } = {}) {
+		return new Promise((resolve, reject) => {
+			;(window as WindowType).ipcRenderer
+				.invoke(eventName, params)
+				.then((result: any) => resolve(result))
+				.catch((error: any) => reject(error))
+		})
+	},
+	checkForAppHeader: function () {
+		this.dispatchEvent("app-init")
+			.then((result: AppInformationType) => {
+				this.state.appInformation = result
+			})
+			.catch((error: any) => {
+				console.log("error", error)
+			})
+	},
+	maximizeApplication: function () {
+		this.dispatchEvent("maximize-application")
+	},
+	exitApplication: function () {
+		this.dispatchEvent("exit-application")
+	},
+	minimizeApplication: function () {
+		this.dispatchEvent("minimize-application")
+	},
 })
+
+export default store

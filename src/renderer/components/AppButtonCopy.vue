@@ -1,19 +1,4 @@
-<template>
-	<template v-if="!isCopied">
-		<AppButton size="normal" theme="outline-info" @click="copyText">
-			<AppIcon icon="clipboard" />
-			<span class="ms-2">Copy</span>
-		</AppButton>
-	</template>
-	<template v-else>
-		<AppButton size="normal" theme="outline-info">
-			<AppIcon icon="check-circle" />
-			<span class="ms-2">Copied</span>
-		</AppButton>
-	</template>
-</template>
-
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue"
 import AppButton from "@components/AppButton"
 import AppIcon from "@components/AppIcon"
@@ -22,13 +7,12 @@ const isCopied = ref(false)
 const props = defineProps({
 	value: {
 		type: String,
-		required: false,
 		default: "",
 	},
 })
 
 const copyText = () => {
-	if (props.value.trim().length) {
+	if (props.value.trim().length && !isCopied.value) {
 		navigator.clipboard.writeText(props.value)
 		isCopied.value = true
 		setTimeout(() => (isCopied.value = false), 1000)
@@ -36,4 +20,18 @@ const copyText = () => {
 }
 </script>
 
-<style scoped lang="sass"></style>
+<template>
+	<AppButton
+		rounded="circle"
+		color="secondary"
+		:variant="isCopied ? 'filled' : 'outlined'"
+		@click="copyText"
+	>
+		<template v-if="isCopied">
+			<AppIcon icon="clipboard-check" />
+		</template>
+		<template v-else>
+			<AppIcon icon="clipboard" />
+		</template>
+	</AppButton>
+</template>

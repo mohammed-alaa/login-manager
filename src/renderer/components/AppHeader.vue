@@ -1,32 +1,34 @@
 <script setup>
-// import { useStore } from "vuex"
+import { computed } from "vue"
+import store from "@store"
 import AppIcon from "@components/AppIcon"
-import AppTitleButton from "@components/AppTitleButton"
+import AppButton from "@components/AppButton"
 
-// const store = useStore()
-const minApplication = () => store.dispatch("minimizeApplication")
-const maxApplication = () => store.dispatch("maximizeApplication")
-const closeApplication = () => store.dispatch("exitApplication")
+const getAppInformation = computed(() => store.getters.getAppInformation)
+const getAppName = computed(() => getAppInformation.value.appName ?? "")
+
+const minApplication = () => store.minimizeApplication()
+const maxApplication = () => store.maximizeApplication()
+const closeApplication = () => store.exitApplication()
 </script>
 
 <template>
-	<header class="app-header flex justify-between content-center">
-		<div class="title text-white font-bold text-center my-auto">
-			<span>Login Manager</span>
-		</div>
-		<div class="flex gap-1 items-center me-1">
-			<AppTitleButton @click="minApplication">
-				<!-- <IconMinimize /> -->
+	<header class="app-header flex items-center justify-between">
+		<h1 class="text-white" v-text="getAppName" />
+		<div class="h-full flex items-center gap-2">
+			<AppButton color="primary" variant="text" @click="minApplication">
 				<AppIcon icon="minimize" />
-			</AppTitleButton>
-			<AppTitleButton @click="maxApplication">
-				<!-- <IconSquare /> -->
+			</AppButton>
+			<AppButton color="primary" variant="text" @click="maxApplication">
 				<AppIcon icon="square" />
-			</AppTitleButton>
-			<AppTitleButton theme="outline-danger" @click="closeApplication">
-				<!-- <IconX /> -->
+			</AppButton>
+			<AppButton
+				color="danger"
+				variant="outlined"
+				@click="closeApplication"
+			>
 				<AppIcon icon="x" />
-			</AppTitleButton>
+			</AppButton>
 		</div>
 	</header>
 </template>

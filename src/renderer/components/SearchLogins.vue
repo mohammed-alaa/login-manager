@@ -1,48 +1,51 @@
+<script setup lang="ts">
+import { reactive, computed, watch } from "vue"
+import store from "@store"
+import FormInput from "@components/FormInput"
+
+const loginsNumber = computed(() => store.getters.loginsNumber)
+const isSearchingDisabled = computed(() => !loginsNumber.value)
+const placeHolder = computed(() =>
+	isSearchingDisabled.value
+		? "Searching is disabled."
+		: `Search ${loginsNumber.value} logins`
+)
+
+const search = reactive({
+	data: "",
+	timeoutId: -1,
+})
+
+watch(
+	() => search.data,
+	(newValue) => {
+		newValue = newValue.trim()
+
+		if (!newValue.length) {
+			return
+		}
+
+		clearTimeout(search.timeoutId)
+		search.timeoutId = setTimeout(() => {
+			store.searchLogins(newValue)
+			console.log("value searched")
+		}, 300)
+	}
+)
+</script>
+
 <template>
-	<div class="search">
+	<div
+		class="search px-4 flex items-center justify-center border-e border-b border-main"
+	>
 		<FormInput
 			id="searchElement"
-			v-model="searchLogin"
-			nolabel
-			placeholder="Search logins (/)"
-			nomargins
-			size="normal"
-			@keydown.esc="searchLogin = ''"
+			v-model="search.data"
+			class="w-full"
+			:placeholder="placeHolder"
+			:readonly="isSearchingDisabled"
+			:disabled="isSearchingDisabled"
+			@keydown.esc="search.data = ''"
 		/>
 	</div>
 </template>
-
-<script setup>
-import { ref, watch, onMounted, onUnmounted } from "vue"
-import { useStore } from "vuex"
-import FormInput from "@components/FormInput"
-
-const store = useStore()
-
-const searchLogin = ref("")
-let searchElement = null
-
-const focusSearch = (event) => {
-	const isValidSlash = event.target.localName !== "input" && event.key === "/"
-	if (isValidSlash) {
-		event.preventDefault()
-		searchElement.focus()
-	}
-}
-watch(searchLogin, (newValue) =>
-	store.dispatch("setSearchText", newValue.trim())
-)
-onMounted(() => {
-	searchElement = document.getElementById("searchElement")
-	document.addEventListener("keydown", focusSearch)
-})
-onUnmounted(() => document.removeEventListener("keydown", focusSearch))
-</script>
-
-<style scoped lang="sass">
-.search
-	grid-area: search
-	padding: calc(var(--search-height) / 4) var(--main-start-offset)
-	border-right: 1px solid var(--main-border-color)
-	border-bottom: 1px solid var(--main-border-color)
-</style>

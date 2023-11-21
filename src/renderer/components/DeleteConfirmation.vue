@@ -1,43 +1,72 @@
-<template>
-	<div class="delete-confirmation d-flex flex-column align-items-center">
-		<p class="delete-text text-white">
-			You are about to delete the following login, are you sure?
-		</p>
-		<div
-			class="actions d-flex flex-row align-items-center justify-content-between gap-3"
-		>
-			<AppButton size="normal" theme="danger" @click="confirmDeleting">
-				<AppIcon icon="trash-fill" />
-				<span class="ms-1">Delete</span>
-			</AppButton>
-			<AppButton size="normal" theme="success" @click="cancelDeleting">
-				<AppIcon icon="x" />
-				<span class="ms-1">Cancel</span>
-			</AppButton>
-		</div>
-	</div>
-</template>
-
 <script setup>
-import { defineEmits } from "vue"
-import AppButton from "@components/AppButton"
+import { computed } from "vue"
+import Modal from "@components/Modal"
 import AppIcon from "@components/AppIcon"
-const emits = defineEmits(["confirmDeleting", "cancelDeleting"])
+import AppAlert from "@components/AppAlert"
+import AppButton from "@components/AppButton"
 
-const confirmDeleting = () => emits("confirmDeleting")
-const cancelDeleting = () => emits("cancelDeleting")
+const emits = defineEmits(["update:modelValue", "confirm"])
+
+const props = defineProps({
+	modelValue: {
+		type: Boolean,
+		default: false,
+	},
+	disabled: {
+		type: Boolean,
+		default: false,
+	},
+	error: {
+		type: Boolean,
+		default: false,
+	},
+})
+
+const modelValue = computed({
+	get: () => props.modelValue,
+	set: (value) => emits("update:modelValue", value),
+})
+
+const confirm = () => emits("confirm")
+const closeModal = () => (modelValue.value = false)
 </script>
 
-<style scoped lang="sass">
-.delete-confirmation
-    background-color: #1e212b
-    border: 1px solid #6610f2
-    padding: 1rem var(--secondary-start-offset)
-    box-shadow: 0 0 0 0.35rem #6610f2
-    margin: 2rem var(--secondary-start-offset)
-    border-radius: var(--border-radius)
-    .delete-text
-        font-size: 2rem
-    .actions
-        width: 65%
-</style>
+<template>
+	<Modal v-model="modelValue" title="Delete Login" :disabled="disabled">
+		<template v-if="error">
+			<AppAlert
+				class="mb-4"
+				type="danger"
+				alert-text="An error occured while deleting this login."
+			/>
+		</template>
+		<p class="text-white">
+			<span>Are you sure? </span>
+			<b class="underline">You cannot undo this action!</b>
+		</p>
+		<template #actions>
+			<div class="flex items-center justify-between gap-2">
+				<AppButton
+					block
+					variant="outlined"
+					color="danger"
+					:disabled="disabled"
+					:loading="disabled"
+					@click="confirm"
+				>
+					<AppIcon end-space icon="trash" />
+					<span>Delete</span>
+				</AppButton>
+				<AppButton
+					block
+					color="secondary"
+					:disabled="disabled"
+					@click="closeModal"
+				>
+					<AppIcon end-space icon="x" />
+					<span>Cancel</span>
+				</AppButton>
+			</div>
+		</template>
+	</Modal>
+</template>

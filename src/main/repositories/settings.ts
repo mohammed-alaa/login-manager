@@ -1,9 +1,10 @@
 import { reportError } from "@utils"
 import {
-	getDatabaseInstanceOrFail,
+	type valueTypeValues,
+	runQuery,
 	exportToDatabaseValue,
 	exportFromDatabaseValue,
-	type valueTypeValues,
+	getDatabaseInstanceOrFail,
 } from "@database"
 
 type TransformedSetting = { [key: string]: any }
@@ -27,7 +28,7 @@ const defaultSettings: DatabaseSetting[] = [
 		type: "boolean",
 	},
 	{
-		name: "hashedPassPhrase",
+		name: "hashedPrimaryPassword",
 		defaultValue: "",
 		type: "string",
 	},
@@ -112,9 +113,7 @@ export async function updateSetting(name: string, newValue: any) {
 	const setting = await retrieveSetting(name)
 
 	return new Promise((resolve, reject) => {
-		const db = getDatabaseInstanceOrFail()
-
-		db?.run(
+		runQuery(
 			"INSERT OR REPLACE INTO `settings` (`name`, `value`, `defaultValue`, `type`) VALUES (?, ?, ?, ?)",
 			[
 				name,
@@ -124,21 +123,18 @@ export async function updateSetting(name: string, newValue: any) {
 				),
 				setting.defaultValue,
 				setting.type,
-			],
-			(error: Error | null) => {
-				if (error) {
-					reportError("Error updating application setting", {
-						message: error.message,
-						context: {
-							name,
-							newValue,
-						},
-					})
-					reject(error)
-				} else {
-					resolve(null)
-				}
-			}
+			]
 		)
+			.then((/*result*/) => resolve(null))
+			.catch((error: Error) => {
+				reportError("Error updating application setting", {
+					message: error.message,
+					context: {
+						name,
+						newValue,
+					},
+				})
+				reject(error)
+			})
 	})
 }

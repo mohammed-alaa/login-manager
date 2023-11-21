@@ -8,105 +8,49 @@ import {
 	Tray,
 	Menu,
 	nativeImage,
+	dialog,
 } from "electron"
 import {
-	validatePassPhrase,
-	readDBLogins,
-	saveNewLogin,
-	deleteLogin,
-	updateLogin,
-	decryptPassword,
-	validateInstallation,
-	createPassPhrase,
-	updateSettings,
-	isDevelopment,
+	isMac,
+	isWindows,
 	reportError,
+	isDevelopment,
+	canShowCustomAppHeader,
 } from "@utils"
+import { initLogger, deInitLogger } from "./logger"
 import { initServer, deInitServer } from "./server"
 import { initDatabase, deInitDatabase } from "@database"
-import { initLogger, deInitLogger } from "./logger"
+import type { Settings, AppInformationType } from "@types"
+import {
+	retrieveSettings,
+	transformSettingsArrayToObject,
+} from "@repositories/settings"
+import packageJson from "../../package.json"
 
 let tray: Tray | null = null
-let isInDevelopment: boolean = false
 let mainWindow: BrowserWindow | null = null
+let settings: Settings | null = null
 
-const initialize = () => {
-	const appPath = getAppDataPath()
-	isInDevelopment = isDevelopment()
-	initDatabase(appPath)
-	initServer()
-	initLogger()
-}
+const isInDevelopment = isDevelopment()
+const icon = nativeImage.createFromPath(
+	join(__dirname, "../../resources/icons/icon_512x512.png")
+)
 
-const deInit = () => {
-	deInitDatabase()
-	deInitServer()
-	deInitLogger()
-}
-
+Menu.setApplicationMenu(null)
 protocol.registerSchemesAsPrivileged([
 	{ scheme: "app", privileges: { secure: true, standard: true } },
 ])
 
-async function createWindow() {
-	initialize()
-	const icon = nativeImage.createFromPath(
-		join(__dirname, "../../resources/icons/icon_512x512.png")
-	)
-
-	mainWindow = new BrowserWindow({
-		minWidth: 900,
-		minHeight: 700,
-		title: "Login Manager",
-		autoHideMenuBar: true,
-		titleBarStyle: "hidden",
-		center: true,
-		darkTheme: true,
-		show: isInDevelopment
-			? true
-			: !(
-					process.appSettings.startOnLogin &&
-					process.appSettings.startMinimized
-			  ),
-		paintWhenInitiallyHidden: isInDevelopment
-			? true
-			: !(
-					process.appSettings.startOnLogin &&
-					process.appSettings.startMinimized
-			  ),
-		icon: icon,
-		webPreferences: {
-			preload: resolve(__dirname, "../preload/index.js"),
-			devTools: isInDevelopment,
-			defaultEncoding: "UTF-8",
-		},
+const setAutoLaunch = () => {
+	app.setLoginItemSettings({
+		name: packageJson.productName,
+		openAtLogin: Boolean(settings?.startOnLogin),
+		openAsHidden: Boolean(settings?.startMinimized),
 	})
+}
 
-	tray = new Tray(icon)
-	tray.setTitle(mainWindow.getTitle())
-	tray.setToolTip(mainWindow.getTitle())
-	tray.setContextMenu(
-		Menu.buildFromTemplate([
-			{
-				label: "Hide App",
-				role: "hide",
-				click: () => mainWindow?.hide(),
-			},
-			{
-				label: "Quit",
-				role: "quit",
-				click: () => mainWindow?.close(),
-			},
-		])
-	)
-
-	tray.on("click", () => {
-		BrowserWindow.getAllWindows()[0].isVisible()
-			? BrowserWindow.getAllWindows()[0].hide()
-			: BrowserWindow.getAllWindows()[0].show()
-	})
-
-	mainWindow.on("show", () => {
+const setTrayMenu = () => {
+	if (mainWindow?.isVisible()) {
 		tray?.setContextMenu(
 			Menu.buildFromTemplate([
 				{
@@ -121,9 +65,7 @@ async function createWindow() {
 				},
 			])
 		)
-	})
-
-	mainWindow.on("hide", () => {
+	} else {
 		tray?.setContextMenu(
 			Menu.buildFromTemplate([
 				{
@@ -138,28 +80,71 @@ async function createWindow() {
 				},
 			])
 		)
+	}
+}
+
+const createTray = () => {
+	tray = new Tray(icon)
+	tray.setTitle(packageJson.productName)
+	tray.setToolTip(packageJson.productName)
+	tray.setIgnoreDoubleClickEvents(true)
+	tray.on("click", () => {
+		BrowserWindow.getAllWindows()[0].isVisible()
+			? BrowserWindow.getAllWindows()[0].hide()
+			: BrowserWindow.getAllWindows()[0].show()
+	})
+}
+
+const createMainWindow = async () => {
+	mainWindow = new BrowserWindow({
+		minWidth: 700,
+		minHeight: 600,
+		title: packageJson.productName,
+		autoHideMenuBar: true,
+		titleBarStyle: isWindows() ? "hidden" : "default",
+		center: true,
+		darkTheme: true,
+		transparent: true,
+		show: isInDevelopment
+			? true
+			: !(settings?.startOnLogin && settings?.startMinimized),
+		paintWhenInitiallyHidden: isInDevelopment
+			? true
+			: !(settings?.startOnLogin && settings?.startMinimized),
+		icon: icon,
+		webPreferences: {
+			preload: resolve(__dirname, "../preload/index.js"),
+			devTools: isInDevelopment,
+			defaultEncoding: "UTF-8",
+		},
 	})
 
-	mainWindow.on("closed", function () {
-		deInit()
-		tray?.destroy()
-		mainWindow = null
-		tray = null
-	})
+	const isNotInstalled: boolean = !settings?.hashedPrimaryPassword
 
 	if (isInDevelopment && process.env.ELECTRON_RENDERER_URL) {
 		if (!process.env.IS_TEST) {
 			mainWindow.webContents.openDevTools()
 		}
-		await mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
+
+		let rendererUrl = `${process.env.ELECTRON_RENDERER_URL}/#/`
+		if (isNotInstalled) {
+			rendererUrl += "install"
+		}
+
+		await mainWindow.loadURL(rendererUrl)
 	} else {
-		mainWindow.loadFile(resolve(__dirname, "../renderer/index.html"))
+		mainWindow.loadFile(resolve(__dirname, "../renderer/index.html"), {
+			hash: isNotInstalled ? "install" : "",
+		})
 	}
 
 	mainWindow.webContents.setWindowOpenHandler(({ url }) => {
 		shell.openExternal(url)
 		return { action: "deny" }
 	})
+
+	mainWindow.on("show", () => setTrayMenu())
+	mainWindow.on("hide", () => setTrayMenu())
 }
 
 process.on("uncaughtException", (error) => {
@@ -168,49 +153,76 @@ process.on("uncaughtException", (error) => {
 	})
 })
 
+// Emitted before the application starts closing its windows.
+app.on("before-quit", () => {
+	deInitServer()
+	deInitDatabase()
+	deInitLogger()
+	tray?.destroy()
+	tray = null
+})
+
+// Emitted when all windows have been closed.
 app.on("window-all-closed", () => {
-	if (process.platform !== "darwin") {
+	if (!isMac()) {
 		app.quit()
 	}
 })
 
+// This event is specific to macOS.
+// It’s emitted when the user clicks the dock icon and no other windows were open,
+// or when the user switches back to your app after having switched away.
+// This event can be emitted multiple times during the application lifecycle, whenever the user activates the app.
 app.on("activate", () => {
-	if (mainWindow === null) createMainWindow()
+	if (mainWindow === null) {
+		createMainWindow()
+	}
 })
 
-app.on("ready", () => {
-	createMainWindow()
-})
+// This event is emitted when Electron has finished initializing.
+// At this point, you can create browser windows and perform other most of the app initialization tasks.
+// This event is emitted once per application lifecycle, shortly after the app starts up.
+app.on("ready", async () => {
+	const appPath = getAppDataPath()
+	initLogger()
 
-const createMainWindow = () => {
-	validateInstallation(getAppDataPath())
+	try {
+		await initDatabase(appPath)
+	} catch (error: any) {
+		reportError("Error while initializing database", { error: error })
+		dialog.showErrorBox("Initialization Error", error.message)
+	}
+
+	initServer()
+
+	try {
+		settings = transformSettingsArrayToObject(
+			await retrieveSettings()
+		) as Settings
+	} catch (error) {
+		reportError("Error while retrieving settings", { error: error })
+	}
+
 	if (!isInDevelopment) {
 		setAutoLaunch()
 	}
 
-	createWindow()
-}
-
-const setAutoLaunch = () => {
-	app.setLoginItemSettings({
-		name: "Login Manager",
-		openAtLogin: process.appSettings.startOnLogin,
-		openAsHidden: process.appSettings.startMinimized,
-		executablePath: app.getPath("exe"),
-	})
-}
+	createTray()
+	createMainWindow()
+	setTrayMenu()
+})
 
 if (isInDevelopment) {
-	if (process.platform === "win32") {
+	if (isWindows()) {
 		process.on("message", (data) => {
 			if (data === "graceful-exit") {
 				app.quit()
 			}
 		})
 	} else {
-		process.on("SIGTERM", () => {
-			app.quit()
-		})
+		process.on("SIGTERM", () => app.quit())
+		process.on("SIGINT", () => app.quit())
+		process.on("SIGHUP", () => app.quit())
 	}
 }
 
@@ -219,75 +231,29 @@ const getAppDataPath = () => {
 }
 
 // IPCMain Events
-ipcMain.on("exit-application", () => {
-	mainWindow?.hide()
+ipcMain.handle("exit-application", () => {
+	app.quit()
+	return true
 })
 
-ipcMain.on("minimize-application", () => {
+ipcMain.handle("minimize-application", () => {
 	mainWindow?.minimize()
+	return true
 })
 
-ipcMain.on("maximize-application", () => {
-	mainWindow?.isMaximized() ? mainWindow?.restore() : mainWindow?.maximize()
+ipcMain.handle("maximize-application", () => {
+	if (!mainWindow) {
+		return false
+	}
+
+	mainWindow.isMaximized() ? mainWindow.restore() : mainWindow.maximize()
+	return true
 })
 
-ipcMain.handle("validate-installation", () => {
-	return process.appSettings.loaded
-})
-
-ipcMain.handle("retrieve-settings", () => {
+ipcMain.handle("app-init", (): AppInformationType => {
 	return {
-		startMinimized: !!process.appSettings.startMinimized,
-		startOnLogin: !!process.appSettings.startOnLogin,
+		customAppHeader: canShowCustomAppHeader(),
+		appName: packageJson.productName,
+		version: packageJson.version,
 	}
-})
-
-ipcMain.handle("update-settings", (event, { newAppSettings }) => {
-	updateSettings(getAppDataPath(), newAppSettings)
-	setAutoLaunch()
-	return null
-})
-
-ipcMain.handle("validate-passphrase", (event, { passPhrase }) => {
-	const validationResult = validatePassPhrase(passPhrase)
-	if (validatePassPhrase) {
-		process.env.decryptionKey = passPhrase
-	}
-	return validationResult
-})
-
-ipcMain.handle("create-passphrase", (event, { passPhrase }) => {
-	createPassPhrase(getAppDataPath(), passPhrase)
-	return null
-})
-
-ipcMain.handle("read-logins", () => {
-	readDBLogins(getAppDataPath())
-	return process.data.logins
-})
-
-ipcMain.handle("read-login", (event, { loginId }) => {
-	const loginIndex = process.data.logins.findIndex(
-		(login) => login.id === loginId
-	)
-	if (loginIndex === -1) return ""
-	return decryptPassword(
-		process.env.decryptionKey,
-		process.data.logins[loginIndex].password
-	)
-})
-
-ipcMain.handle("create-login", (event, { newLoginInformation }) => {
-	saveNewLogin(getAppDataPath(), newLoginInformation)
-	return null
-})
-
-ipcMain.handle("delete-login", (event, { loginId }) => {
-	deleteLogin(getAppDataPath(), loginId)
-	return null
-})
-
-ipcMain.handle("edit-login", (event, { loginId, newLoginInformation }) => {
-	updateLogin(getAppDataPath(), loginId, newLoginInformation)
-	return null
 })

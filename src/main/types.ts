@@ -4,10 +4,13 @@ export * from "@globalTypes"
 
 export type Request = IncomingMessage & {
 	body?: any
+	query?: any
 }
+
 export type Response = ServerResponse & {
 	req: Request
 }
+
 export type ResponseData = object | string | number | boolean | null
 
 export type ResponseFunction = (

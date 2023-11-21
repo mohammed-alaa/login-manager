@@ -28,6 +28,7 @@
 		"zod": "^3.22.4"
 	},
 	"devDependencies": {
+		"@tabler/icons-webfont": "^2.40.0",
 		"@typescript-eslint/eslint-plugin": "^6.9.1",
 		"@typescript-eslint/parser": "^6.9.1",
 		"@vitejs/plugin-vue": "^4.4.0",
@@ -52,7 +53,6 @@
 		"vite": "^4.5.0",
 		"vite-plugin-electron": "^0.14.1",
 		"vite-plugin-eslint": "^1.8.1",
-		"vite-svg-loader": "^4.0.0",
 		"vue": "^3.3.7",
 		"vue-router": "^4.2.5",
 		"vue-tsc": "^1.8.22",

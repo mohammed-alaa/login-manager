@@ -2,14 +2,18 @@
 // Across main and renderer processes
 
 export type InstallForm = {
-	passPhrase: string
-	confirmedPassPhrase: string
+	primaryPassword: string
+	confirmedPrimaryPassword: string
+}
+
+export type LoginForm = {
+	primaryPassword: string
 }
 
 export type Settings = {
 	startOnLogin: boolean
 	startMinimized: boolean
-	hashedPassPhrase: string
+	hashedPrimaryPassword: string
 }
 
 export type LoginItem = {
@@ -20,3 +24,20 @@ export type LoginItem = {
 }
 
 export type LoginList = Array<Exclude<LoginItem, "password">>
+
+export type CreateEditFormData = {
+	website: string
+	username: string
+	password: string
+}
+
+export type ipcRenderer = {
+	invoke: (channel: string, ...args: any) => Promise<any>
+	send: (channel: string, ...args: any) => void
+}
+
+export type AppInformationType = {
+	customAppHeader: boolean
+	appName: string
+	version: string
+}

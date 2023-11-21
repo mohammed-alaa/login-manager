@@ -10,8 +10,10 @@ type FormInputProps = {
 	placeholder?: string
 	readonly?: boolean
 	error?: string
+	min?: number | string
 	isSubmitted?: boolean
-	rounded?: "sm" | "md" | "lg" | "xl"
+	rounded?: false | "sm" | "md" | "lg" | "circle"
+	disabled?: boolean
 }
 
 const props = withDefaults(defineProps<FormInputProps>(), {
@@ -23,6 +25,8 @@ const props = withDefaults(defineProps<FormInputProps>(), {
 	error: "",
 	isSubmitted: false,
 	rounded: "md",
+	min: 0,
+	disabled: false,
 })
 
 const modelValue = computed({
@@ -35,7 +39,7 @@ const roundedComputed = computed(() => ({
 	"rounded-sm": props.rounded === "sm",
 	"rounded-md": props.rounded === "md",
 	"rounded-lg": props.rounded === "lg",
-	"rounded-xl": props.rounded === "xl",
+	"rounded-circle": props.rounded === "circle",
 }))
 </script>
 
@@ -52,14 +56,18 @@ const roundedComputed = computed(() => ({
 			:id="id"
 			v-model="modelValue"
 			:type="type"
+			:min="min"
 			:readonly="readonly"
 			:placeholder="placeholder"
+			:disabled="disabled"
 			:class="[
-				'form-input block w-full py-2 px-4 transition ease-in-out ring-0 focus:ring-2 focus:ring-blue-500 text-white',
+				'form-input bg-input border border-main focus:bg-focus block w-full py-2 px-4 transition ease-in-out ring-0 text-white',
 				{
 					...roundedComputed,
-					'ring-red-500': isError,
-					'ring-green-500': !isError,
+					'opacity-70 cursor-not-allowed': disabled,
+					'focus:ring-2 focus:ring-blue-500': !disabled,
+					'ring-red-500': !disabled && isError,
+					'ring-green-500': !disabled && !isError,
 				},
 			]"
 			@focus="$emit('focus', $event)"
@@ -75,16 +83,13 @@ const roundedComputed = computed(() => ({
 <style scoped lang="sass">
 $form-control-placeholder-color: #888
 $form-control-focus-color: #e6e6e6
-$form-control-focus-background-color: #141414
 
 .submitted .form-input
 	@apply ring-2
 
 .form-input
-	background-color: #{$form-control-focus-background-color}
 	&:focus
 		color: #{$form-control-focus-color}
-		background-color: #{$form-control-focus-background-color}
 		@apply outline-0
 	&::-webkit-input-placeholder
 		color: #{$form-control-placeholder-color}

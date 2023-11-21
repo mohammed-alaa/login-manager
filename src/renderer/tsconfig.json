@@ -6,18 +6,19 @@
 		"baseUrl": ".",
 		"allowSyntheticDefaultImports": true,
 		"jsx": "preserve",
-		"moduleResolution": "node",
+		"moduleResolution": "Bundler",
 		"resolveJsonModule": true,
 		"strict": true,
 		"esModuleInterop": true,
 		"isolatedModules": true,
-		"skipLibCheck": true,
+		"skipLibCheck": false,
 		"paths": {
 			"@/*": ["./*"],
 			"@components/*": ["./components/*.vue"],
 			"@utils": ["./utils"],
 			"@store": ["./store"],
-			// "@types": ["./types.ts"],
+			"@views/*": ["./router/views/*"],
+			"@types": ["./types.ts"],
 			"@schemas": ["./schemas.ts"],
 			"@globalTypes": ["../types.ts"]
 		},
@@ -26,6 +27,6 @@
 		"importHelpers": true,
 		"sourceMap": true
 	},
-	"include": ["./**/*.js", "./**/*.ts", "./**/*.vue"],
+	"include": ["./**/*.js", "./**/*.ts", "./**/*.vue", "./views/**/*.vue"],
 	"exclude": ["build", "node_modules"]
 }

@@ -1,23 +1,33 @@
-import { z } from "zod"
+import { z, type ZodType } from "zod"
+import type { Settings } from "@types"
 
-export const updateSettingSchema = z.object({
-	name: z.string({
-		required_error: "Setting name is required",
-	}),
-	value: z.any().optional(),
+type updateSettingSchemaType = {
+	[key in keyof Settings]?: ZodType
+}
+
+export const updateSettingSchema = z.object<updateSettingSchemaType>({
+	startOnLogin: z.optional(z.boolean()),
+	startMinimized: z.optional(z.boolean()),
 })
 
 export const installFormSchema = z
 	.object({
-		passPhrase: z
-			.string({ required_error: "Passphrase is required." })
+		primaryPassword: z
+			.string({ required_error: "Primary password is required." })
 			.trim()
-			.min(8, "Passphrase must be at least 8 characters."),
-		confirmedPassPhrase: z.string({
-			required_error: "Confirm the passphrase.",
+			.min(8, "Primary password must be at least 8 characters."),
+		confirmedPrimaryPassword: z.string({
+			required_error: "Confirm the primary password.",
 		}),
 	})
-	.refine((data) => data.passPhrase === data.confirmedPassPhrase, {
-		message: "Passphrases don't match",
-		path: ["confirmedPassPhrase"],
+	.refine((data) => data.primaryPassword === data.confirmedPrimaryPassword, {
+		message: "Primary passwords don't match",
+		path: ["confirmedPrimaryPassword"],
 	})
+
+export const loginFormSchema = z.object({
+	primaryPassword: z
+		.string({ required_error: "Password is required." })
+		.trim()
+		.min(8, "Password must be at least 8 characters."),
+})

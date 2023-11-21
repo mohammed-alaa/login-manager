@@ -1,132 +1,68 @@
+<script setup lang="ts">
+import { reactive, computed } from "vue"
+import { useRouter } from "vue-router"
+import store from "@store"
+import AppIcon from "@components/AppIcon"
+import AppButton from "@components/AppButton"
+import DeleteConfirmation from "@components/DeleteConfirmation"
+
+const router = useRouter()
+
+const deleteLogin = reactive({
+	loading: false,
+	error: false,
+	open: false,
+})
+
+const activeLoginId = computed(() => store.getters.getActiveLoginId)
+
+const closeLogin = () => store.clearActiveLoginId()
+const attempDeleteLogin = () => (deleteLogin.open = true)
+const editLogin = () =>
+	router.push({ name: "edit", params: { id: activeLoginId.value } })
+const confirmDeleteLogin = () => {
+	if (!deleteLogin.open || deleteLogin.loading) {
+		return
+	}
+
+	deleteLogin.loading = true
+	deleteLogin.error = false
+
+	store
+		.deleteLogin()
+		.then(() => (deleteLogin.open = false))
+		.catch(() => (deleteLogin.error = true))
+		.finally(() => (deleteLogin.loading = false))
+}
+</script>
+
 <template>
-	<div class="body-actions flex items-center justify-between gap-4">
-		<transition name="swap">
-			<template v-if="showWebsiteName">
-				<div class="website flex items-center gap-2 overflow-hidden">
-					<AppIcon icon="globe" class="text-white py-2 px-3" />
-					<a
-						:key="10"
-						class="website-href lowercase text-decoration-none py-2 px-4 truncate"
-						target="_blank"
-						noreferrer
-						:href="getLoginWebsiteAddress"
-					>
-						<span v-text="getLoginWebsiteName" />
-					</a>
-				</div>
-			</template>
-			<template v-else>
-				<div />
-			</template>
-		</transition>
-		<div class="flex items-center justify-center gap-2">
-			<AppButton
-				id="editLogin"
-				theme="outline-warning"
-				:disabled="isEditButtonDisabled"
-				:is-active="isEditing"
-				@click="editLogin"
-			>
-				<AppIcon icon="pencil-fill" />
-				<span class="ms-2">Edit (e)</span>
+	<div class="flex items-center justify-between">
+		<div class="flex items-center gap-2">
+			<AppButton color="secondary" @click="editLogin">
+				<AppIcon end-space icon="edit" />
+				<span>Edit</span>
 			</AppButton>
 			<AppButton
-				id="deleteLogin"
-				theme="outline-danger"
-				:disabled="isDeleteButtonDisabled"
-				:is-active="isDeleting"
-				@click="deleteLogin"
+				color="danger"
+				:disabled="deleteLogin.open"
+				:loading="deleteLogin.open"
+				@click="attempDeleteLogin"
 			>
-				<AppIcon icon="trash-fill" />
-				<span class="ms-2">Delete (d)</span>
+				<AppIcon end-space icon="trash" />
+				<span>Delete</span>
+			</AppButton>
+		</div>
+		<div>
+			<AppButton rounded="circle" variant="outlined" @click="closeLogin">
+				<AppIcon icon="x" />
 			</AppButton>
 		</div>
 	</div>
+	<DeleteConfirmation
+		v-model="deleteLogin.open"
+		:error="deleteLogin.error"
+		:disabled="deleteLogin.loading"
+		@confirm="confirmDeleteLogin"
+	/>
 </template>
-
-<script setup>
-import { computed, onMounted, onUnmounted } from "vue"
-import { useStore } from "vuex"
-import { getWebsiteName } from "@utils"
-import AppButton from "@components/AppButton"
-import AppIcon from "@components/AppIcon"
-
-const store = useStore()
-let editLoginElement = null
-let deleteLoginElement = null
-
-const isViewing = computed(() => store.getters.getMode === "v")
-const isEditing = computed(() => store.getters.getMode === "e")
-const isDeleting = computed(() => store.getters.getMode === "d")
-const isActiveLoginInvalid = computed(
-	() => store.getters.getActiveLogin === "-1"
-)
-const isEditButtonDisabled = computed(
-	() => !isActiveLoginInvalid.value && !isViewing.value && !isEditing.value
-)
-const isDeleteButtonDisabled = computed(
-	() => !isActiveLoginInvalid.value && !isViewing.value && !isDeleting.value
-)
-const activeLoginId = computed(() => store.getters.getActiveLogin)
-const logins = computed(() => store.getters.getLoginList)
-const loginInformation = computed(() =>
-	logins.value.find((login) => login.id === activeLoginId.value)
-)
-const getLoginWebsiteAddress = computed(
-	() => loginInformation.value?.website ?? ""
-)
-const getLoginWebsiteName = computed(() =>
-	getWebsiteName(getLoginWebsiteAddress.value)
-)
-const showWebsiteName = computed(() => isViewing.value || isDeleting.value)
-
-const editLogin = () =>
-	isEditing.value
-		? store.dispatch("setViewMode")
-		: store.dispatch("setEditMode")
-const deleteLogin = () =>
-	isDeleting.value
-		? store.dispatch("setViewMode")
-		: store.dispatch("setDeleteMode")
-
-const focusnewLogin = (event) => {
-	if (event.target.localName === "input") return
-
-	if (event.key === "e") {
-		event.preventDefault()
-		editLoginElement.click()
-	} else if (event.key === "d") {
-		event.preventDefault()
-		deleteLoginElement.click()
-	}
-}
-onMounted(() => {
-	editLoginElement = document.getElementById("editLogin")
-	deleteLoginElement = document.getElementById("deleteLogin")
-	document.addEventListener("keydown", focusnewLogin)
-})
-onUnmounted(() => document.removeEventListener("keydown", focusnewLogin))
-</script>
-
-<style scoped lang="sass">
-.body-actions
-	.website
-		font-size: 1.3rem
-		font-weight: lighter
-		letter-spacing: 0.05rem
-		i, .website-href
-			transition: all 250ms ease-in-out
-		i
-			border-radius: 50%
-			border: 1px solid #60688b
-			background-color: rgb(39 42 55 / 66%)
-		.website-href
-			border: 1px solid #60688bf5
-			border-radius: var(--border-radius)
-			color: #c2cdfc
-
-			&:hover
-				border-color: transparent
-				background-color: rgb(39 42 55)
-				color: var(--color-white)
-</style>

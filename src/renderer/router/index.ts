@@ -1,26 +1,36 @@
 import { createRouter, createWebHashHistory } from "vue-router"
-import PassPhraseView from "@views/PassPhraseView"
+import Login from "@views/Login.vue"
 
 const routes = [
 	{
 		path: "/",
-		name: "PassPhrase",
-		component: PassPhraseView,
+		name: "Login",
+		component: Login,
 	},
 	{
-		path: "/",
+		path: "/home",
 		name: "home",
-		component: () => import("@views/HomeView"),
+		component: () => import("@views/Home.vue"),
 	},
 	{
 		path: "/settings",
 		name: "settings",
-		component: () => import("@views/SettingsView"),
+		component: () => import("@views/Settings.vue"),
 	},
 	{
 		path: "/install",
 		name: "install",
-		component: () => import("@views/InstallView"),
+		component: () => import("@views/Install.vue"),
+	},
+	{
+		path: "/create",
+		name: "create",
+		component: () => import("@views/Create.vue"),
+	},
+	{
+		path: "/edit/:id",
+		name: "edit",
+		component: () => import("@views/Edit.vue"),
 	},
 ]
 

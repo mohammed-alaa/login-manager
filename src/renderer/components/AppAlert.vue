@@ -1,15 +1,8 @@
-<template>
-	<div :class="`alert alert-${type}`">
-		<AppIcon v-if="type === 'danger'" icon="exclamation-circle" />
-		<AppIcon v-else-if="type === 'success'" icon="check-circle" />
-		<span class="ms-1 pl-2" v-text="alertText" />
-	</div>
-</template>
-
-<script setup>
+<script setup lang="ts">
+import { computed } from "vue"
 import AppIcon from "@components/AppIcon"
 
-defineProps({
+const props = defineProps({
 	type: {
 		type: String,
 		required: true,
@@ -19,20 +12,27 @@ defineProps({
 		required: true,
 	},
 })
+
+const typeComputed = computed(() => ({
+	"bg-alert-danger text-alert-danger border-alert-danger":
+		props.type === "danger",
+	"bg-alert-success text-alert-success border-alert-success":
+		props.type === "success",
+}))
 </script>
 
-<style scoped lang="sass">
-
-.alert
-    &.pl-2
-        padding-left: .3rem
-    &.alert-success
-        color: #0b3823
-        background-color: #90d4b5
-        border-color: #447b62
-
-    &.alert-danger
-        color: #fff
-        background-color: #b16b72
-        border-color: #9e4f57
-</style>
+<template>
+	<div
+		class="rounded-lg px-4 py-2 border flex gap-2 items-center"
+		:class="typeComputed"
+		role="alert"
+	>
+		<template v-if="type === 'danger'">
+			<AppIcon icon="exclamation-circle" />
+		</template>
+		<template v-else-if="type === 'success'">
+			<AppIcon icon="circle-check" />
+		</template>
+		<p v-text="alertText" />
+	</div>
+</template>
