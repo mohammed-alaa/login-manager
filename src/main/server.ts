@@ -39,7 +39,7 @@ const _routes: Route[] = [
 		handler: updateSetting,
 	},
 	{
-		path: "/logins",
+		path: "/logins?",
 		method: "GET",
 		handler: retrieveLogins,
 	},
@@ -49,17 +49,17 @@ const _routes: Route[] = [
 		handler: createLogin,
 	},
 	{
-		path: "/logins?",
+		path: "/login?",
 		method: "GET",
 		handler: retrieveLogin,
 	},
 	{
-		path: "/logins?",
+		path: "/login?",
 		method: "PUT",
 		handler: updateLogin,
 	},
 	{
-		path: "/logins?",
+		path: "/login?",
 		method: "DELETE",
 		handler: deleteLogin,
 	},

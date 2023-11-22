@@ -68,7 +68,7 @@ const store: StoreType = reactive<StoreType>({
 	retrieveLogins: function (): Promise<LoginList> {
 		return new Promise((resolve, reject) => {
 			axios
-				.get("/logins")
+				.get("/logins", { params: { search: this.getters.getSearchText }})
 				.then((response) => {
 					this.state.logins = response.data.logins
 					resolve(response.data.logins)
@@ -82,7 +82,7 @@ const store: StoreType = reactive<StoreType>({
 	retrieveLogin: function (loginId: number): Promise<LoginItem> {
 		return new Promise((resolve, reject) => {
 			axios
-				.get("/logins", { params: { loginId } })
+				.get("/login", { params: { loginId } })
 				.then(({ data }) => resolve(data.login))
 				.catch((error) => reject(error.response.data))
 		})
@@ -103,19 +103,15 @@ const store: StoreType = reactive<StoreType>({
 				.catch((error) => reject(error.response.data))
 		})
 	},
-	searchLogins: function (searchText: string): Promise<void> {
-		return new Promise((resolve, reject) => {
-			axios
-				.get(`/logins/search/${searchText}`)
-				.then((response) => {
-					this.state.logins = response.data.logins
-					resolve()
-				})
-				.catch((error) => reject(error.response.data))
-		})
+	searchLogins: function (searchText: string): Promise<LoginList> {
+		this.state.searchText = searchText.trim()
+		return this.retrieveLogins()
 	},
-	clearActiveLoginId: function () {
+	resetActiveLoginId: function () {
 		this.state.activeLoginId = null
+	},
+	resetSearch: function () {
+		this.state.searchText = ""
 	},
 	createNewItem: function (data: CreateEditFormData): Promise<void> {
 		return new Promise((resolve, reject) => {
@@ -131,7 +127,7 @@ const store: StoreType = reactive<StoreType>({
 	): Promise<void> {
 		return new Promise((resolve, reject) => {
 			axios
-				.put("/logins", data, { params: { loginId } })
+				.put("/login", data, { params: { loginId } })
 				.then(() => resolve())
 				.catch((error) => reject(error.response.data))
 		})
@@ -143,12 +139,12 @@ const store: StoreType = reactive<StoreType>({
 			}
 
 			axios
-				.delete("/logins", {
+				.delete("/login", {
 					params: { loginId: this.getters.getActiveLoginId },
 				})
 				.then(() => {
 					this.retrieveLogins()
-					this.clearActiveLoginId()
+					this.resetActiveLoginId()
 					resolve()
 				})
 				.catch(() => reject())

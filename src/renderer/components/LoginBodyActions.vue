@@ -16,7 +16,7 @@ const deleteLogin = reactive({
 
 const activeLoginId = computed(() => store.getters.getActiveLoginId)
 
-const closeLogin = () => store.clearActiveLoginId()
+const closeLogin = () => store.resetActiveLoginId()
 const attempDeleteLogin = () => (deleteLogin.open = true)
 const editLogin = () =>
 	router.push({ name: "edit", params: { id: activeLoginId.value } })

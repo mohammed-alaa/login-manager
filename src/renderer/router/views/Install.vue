@@ -28,7 +28,7 @@ const formSubmit = async () => {
 
 	try {
 		await store.install(installForm.data)
-		setTimeout(() => router.replace({ name: "Login" }), 1000)
+		router.replace({ name: "Login" })
 	} catch (error: any) {
 		const { errors } = error
 		installForm.errors.primaryPassword = errors.primaryPassword ?? ""

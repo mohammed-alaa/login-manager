@@ -3,14 +3,6 @@ import { reactive, computed, watch } from "vue"
 import store from "@store"
 import FormInput from "@components/FormInput"
 
-const loginsNumber = computed(() => store.getters.loginsNumber)
-const isSearchingDisabled = computed(() => !loginsNumber.value)
-const placeHolder = computed(() =>
-	isSearchingDisabled.value
-		? "Searching is disabled."
-		: `Search ${loginsNumber.value} logins`
-)
-
 const search = reactive({
 	data: "",
 	timeoutId: -1,
@@ -19,16 +11,9 @@ const search = reactive({
 watch(
 	() => search.data,
 	(newValue) => {
-		newValue = newValue.trim()
-
-		if (!newValue.length) {
-			return
-		}
-
 		clearTimeout(search.timeoutId)
 		search.timeoutId = setTimeout(() => {
-			store.searchLogins(newValue)
-			console.log("value searched")
+			store.searchLogins(newValue.trim())
 		}, 300)
 	}
 )
@@ -42,9 +27,7 @@ watch(
 			id="searchElement"
 			v-model="search.data"
 			class="w-full"
-			:placeholder="placeHolder"
-			:readonly="isSearchingDisabled"
-			:disabled="isSearchingDisabled"
+			placeholder="Search logins"
 			@keydown.esc="search.data = ''"
 		/>
 	</div>

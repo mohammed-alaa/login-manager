@@ -25,7 +25,7 @@ const formSubmit = async () => {
 
 	try {
 		await store.login({ primaryPassword: loginForm.password })
-		setTimeout(() => router.replace({ name: "home" }), 500)
+		router.replace({ name: "home" })
 	} catch (error: any) {
 		const { errors, message } = error
 		loginForm.error = errors?.primaryPassword ?? message ?? ""

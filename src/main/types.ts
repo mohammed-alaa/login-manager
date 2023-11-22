@@ -1,10 +1,11 @@
 import type { IncomingMessage, ServerResponse } from "http"
+import type { URLSearchParams } from "url"
 
 export * from "@globalTypes"
 
 export type Request = IncomingMessage & {
 	body?: any
-	query?: any
+	query?: URLSearchParams
 }
 
 export type Response = ServerResponse & {

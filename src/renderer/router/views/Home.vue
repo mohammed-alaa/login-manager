@@ -10,7 +10,10 @@ import SearchLogins from "@components/SearchLogins"
 const isActiveLoginValid = computed(() => store.getters.isActiveLoginValid)
 
 onMounted(() => store.retrieveLogins())
-onUnmounted(() => store.clearActiveLoginId())
+onUnmounted(() => {
+	store.resetActiveLoginId()
+	store.resetSearch()
+})
 </script>
 
 <template>

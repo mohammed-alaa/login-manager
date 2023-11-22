@@ -2,17 +2,29 @@ import { reportError, encryptPassword } from "@utils"
 import { runQuery, getDatabaseInstanceOrFail } from "@database"
 import type { LoginItem, LoginList, CreateEditFormData } from "@types"
 
-export function retrieveLogins() {
+export function retrieveLogins(searchText: string) {
 	return new Promise((resolve, reject) => {
 		const db = getDatabaseInstanceOrFail()
+		let query = "SELECT `id`, `website`, `username` FROM `logins`"
+		let params = []
 
-		db?.all(
-			"SELECT `id`, `website`, `username` FROM `logins`",
-			[],
+		if (searchText.trim().length) {
+			searchText = searchText
+				.replace(/_/g, '\\_')
+				.replace(/%/g, '\\%')
+			searchText = `%${searchText}%`
+			query += " WHERE `website` LIKE ? OR `username` LIKE ? ESCAPE '\\'"
+			params = [searchText, searchText]
+		}
+
+		db?.all(query, params,
 			(error, rows: LoginList[]) => {
 				if (error) {
-					reportError("Error getting retrieving settings", {
+					reportError("Error while retrieving settings", {
 						message: error.message,
+						query,
+						params,
+						searchText,
 					})
 					reject(error)
 				} else {
@@ -32,7 +44,7 @@ export function retrieveLogin(loginId: number) {
 			[loginId],
 			(error, row: LoginItem) => {
 				if (error) {
-					reportError(`Error getting retrieving login ${loginId}`, {
+					reportError(`Error while retrieving login ${loginId}`, {
 						message: error.message,
 					})
 					reject(error)
