@@ -12,11 +12,13 @@ import type {
 	InstallForm,
 	CreateEditFormData,
 	AppInformationType,
+	RetrieveLoginListType,
 } from "@types"
 
 const state: StateType = reactive<StateType>({
 	isLoading: false,
 	logins: [],
+	loginsNumber: 0,
 	activeLoginId: null,
 	searchText: "",
 	appInformation: {
@@ -29,6 +31,7 @@ const state: StateType = reactive<StateType>({
 const getters: GetterType = {
 	getIsLoading: computed(() => state.isLoading),
 	getLoginList: computed(() => state.logins),
+	loginsNumber: computed(() => state.loginsNumber),
 	getActiveLoginId: computed({
 		get: () => state.activeLoginId,
 		set: (value: null | number) => (state.activeLoginId = value),
@@ -41,7 +44,6 @@ const store: StoreType = reactive<StoreType>({
 	state,
 	getters: {
 		...getters,
-		loginsNumber: computed(() => getters.getLoginList.value.length),
 		isActiveLoginValid: computed(
 			() => getters.getActiveLoginId.value !== null
 		),
@@ -70,8 +72,10 @@ const store: StoreType = reactive<StoreType>({
 			axios
 				.get("/logins", { params: { search: this.getters.getSearchText }})
 				.then((response) => {
-					this.state.logins = response.data.logins
-					resolve(response.data.logins)
+					const data: RetrieveLoginListType = response.data
+					this.state.logins = data.logins
+					this.state.loginsNumber = data.loginsNumber
+					resolve(data.logins)
 				})
 				.catch((error) => {
 					console.log("error", error)

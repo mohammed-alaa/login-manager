@@ -6,6 +6,7 @@ export * from "@globalTypes"
 export type StateType = {
 	isLoading: boolean
 	logins: LoginList[]
+	loginsNumber: number
 	activeLoginId: null | number
 	searchText: string
 	appInformation: AppInformationType

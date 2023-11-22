@@ -2,7 +2,28 @@ import { reportError, encryptPassword } from "@utils"
 import { runQuery, getDatabaseInstanceOrFail } from "@database"
 import type { LoginItem, LoginList, CreateEditFormData } from "@types"
 
-export function retrieveLogins(searchText: string) {
+export function countLogins(): Promise<number> {
+	return new Promise((resolve, reject) => {
+		const db = getDatabaseInstanceOrFail()
+
+		db?.get(
+			"SELECT COUNT(*) AS `logins_number` FROM `logins`",
+			[],
+			(error, row: number) => {
+				if (error) {
+					reportError("Error while retrieving number of logins", {
+						message: error.message,
+					})
+					reject(error)
+				} else {
+					resolve(row.logins_number)
+				}
+			}
+		)
+	})
+}
+
+export function retrieveLogins(searchText: string = "") {
 	return new Promise((resolve, reject) => {
 		const db = getDatabaseInstanceOrFail()
 		let query = "SELECT `id`, `website`, `username` FROM `logins`"

@@ -24,6 +24,10 @@ export type LoginItem = {
 }
 
 export type LoginList = Array<Exclude<LoginItem, "password">>
+export type RetrieveLoginListType = {
+	loginsNumber: number
+	logins: LoginList
+}
 
 export type CreateEditFormData = {
 	website: string
