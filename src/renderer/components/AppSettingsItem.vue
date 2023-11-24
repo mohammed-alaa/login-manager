@@ -1,9 +1,7 @@
 <script setup></script>
 
 <template>
-	<div
-		class="setting-item py-3 px-4 bg-secondary rounded-lg border border-main"
-	>
+	<div class="px-2">
 		<slot />
 	</div>
 </template>

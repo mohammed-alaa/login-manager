@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, watch, onMounted } from "vue"
+import { reactive, computed, watch, onMounted } from "vue"
 import { useRouter } from "vue-router"
 import type { Settings } from "@types"
 import store from "@store"
@@ -23,17 +23,23 @@ const appSettings = reactive({
 	data: {},
 })
 
+const getAppInformation = computed(() => store.getters.getAppInformation)
+
 const goHome = () => router.push({ name: "home" })
-const saveSettings = () => {
+const saveApplicationSettings = () => {
 	if (appSettings.update.loading) {
 		return
 	}
 
 	appSettings.update.error = false
 	appSettings.update.loading = true
+	const data = {
+		startOnLogin: appSettings.data.startOnLogin,
+		startMinimized: appSettings.data.startMinimized,
+	}
 
 	store
-		.updateAppSettings(appSettings.data)
+		.updateAppSettings(data)
 		.then((settings: Settings) => (appSettings.data = settings))
 		.catch(() => (appSettings.update.error = true))
 		.finally(() => (appSettings.update.loading = false))
@@ -88,36 +94,93 @@ onMounted(() => {
 			</div>
 		</template>
 		<template v-else>
-			<AppForm
+			<div
 				class="settings-body h-full p-4 flex flex-col gap-4 bg-main border border-t-0 border-main"
-				@submit="saveSettings"
 			>
-				<AppSettingsItem>
-					<FormInputSwitch
-						id="startOnLogin"
-						v-model="appSettings.data.startOnLogin"
-						label="Open automaitcally after you login into the computer"
-					/>
-				</AppSettingsItem>
-				<AppSettingsItem>
-					<FormInputSwitch
-						id="startMinimized"
-						v-model="appSettings.data.startMinimized"
-						label="Hide on startup"
-						:disabled="!appSettings.data.startOnLogin"
-					/>
-				</AppSettingsItem>
+				<AppForm
+					class="flex flex-col gap-2"
+					@submit="saveApplicationSettings"
+				>
+					<h3 class="text-white mb-2">Application Startup</h3>
+					<AppSettingsItem>
+						<FormInputSwitch
+							id="startOnLogin"
+							v-model="appSettings.data.startOnLogin"
+							label="Open automaitcally after you login into the computer"
+						/>
+					</AppSettingsItem>
+					<AppSettingsItem>
+						<FormInputSwitch
+							id="startMinimized"
+							v-model="appSettings.data.startMinimized"
+							label="Hide on startup"
+							:disabled="!appSettings.data.startOnLogin"
+						/>
+					</AppSettingsItem>
+					<div>
+						<AppButton
+							type="submit"
+							:loading="appSettings.update.loading"
+							:disabled="appSettings.update.loading"
+						>
+							<AppIcon end-space icon="save2-fill" />
+							<span>Save</span>
+						</AppButton>
+					</div>
+				</AppForm>
 				<div>
-					<AppButton
-						type="submit"
-						:loading="appSettings.update.loading"
-						:disabled="appSettings.update.loading"
-					>
-						<AppIcon end-space icon="save2-fill" />
-						<span>Update settings</span>
-					</AppButton>
+					<h3 class="text-white mb-2">About</h3>
+					<div class="text-gray flex flex-col gap-1">
+						<div>
+							<p>
+								{{ getAppInformation.appName }} v{{ getAppInformation.version }}
+							</p>
+							<p>
+								{{ getAppInformation.description }}
+							</p>
+						</div>
+						<div class="flex flex-wrap items-center gap-1">
+							<span>Found an issue?</span>
+							<a
+								noreferrer
+								target="_blank"
+								class="underline"
+								:href="getAppInformation.bugs.url"
+							>
+								Report here
+							</a>
+							<span>or</span>
+							<a
+								noreferrer
+								target="_blank"
+								:href="`mailto:${getAppInformation.bugs.email}`"
+							>
+								<AppButton size="sm" rounded="circle">
+									<AppIcon icon="mail" />
+								</AppButton>
+							</a>
+						</div>
+						<div>
+							<a
+								noreferrer
+								target="_blank"
+								title="Homepage"
+								:href="getAppInformation.homepage"
+							>
+								<AppIcon end-space size="lg" icon="home" />
+							</a>
+							<a
+								noreferrer
+								target="_blank"
+								title="Github Repository"
+								:href="getAppInformation.repository"
+							>
+								<AppIcon end-space size="lg" icon="brand-github" />
+							</a>
+						</div>
+					</div>
 				</div>
-			</AppForm>
+			</div>
 		</template>
 	</section>
 </template>

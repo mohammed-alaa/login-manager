@@ -255,5 +255,10 @@ ipcMain.handle("app-init", (): AppInformationType => {
 		customAppHeader: canShowCustomAppHeader(),
 		appName: packageJson.productName,
 		version: packageJson.version,
+		homepage: packageJson.homepage,
+		description: packageJson.description,
+		repository: packageJson.repository.url,
+		bugs: packageJson.bugs,
+		author: packageJson.author,
 	}
 })
