@@ -2,6 +2,8 @@ import { reportError, encryptPassword } from "@utils"
 import { runQuery, getDatabaseInstanceOrFail } from "@database"
 import type { LoginItem, LoginList, CreateEditFormData } from "@types"
 
+const LoginListPaginationLimit = 7
+
 export function countLogins(): Promise<number> {
 	return new Promise((resolve, reject) => {
 		const db = getDatabaseInstanceOrFail()
@@ -23,36 +25,42 @@ export function countLogins(): Promise<number> {
 	})
 }
 
-export function retrieveLogins(searchText: string = "") {
+export const hasMore = (count: number, page: number): boolean => {
+	return (count > (page * LoginListPaginationLimit))
+}
+
+export function retrieveLogins(searchText: string = "", page: number = 0, sort: "asc" | "desc" = "desc") {
 	return new Promise((resolve, reject) => {
 		const db = getDatabaseInstanceOrFail()
 		let query = "SELECT `id`, `website`, `username` FROM `logins`"
 		let params = []
 
 		if (searchText.trim().length) {
-			searchText = searchText
-				.replace(/_/g, '\\_')
-				.replace(/%/g, '\\%')
+			searchText = searchText.replace(/_/g, "\\_").replace(/%/g, "\\%")
 			searchText = `%${searchText}%`
 			query += " WHERE `website` LIKE ? OR `username` LIKE ? ESCAPE '\\'"
-			params = [searchText, searchText]
+			params.push(searchText, searchText)
 		}
 
-		db?.all(query, params,
-			(error, rows: LoginList[]) => {
-				if (error) {
-					reportError("Error while retrieving settings", {
-						message: error.message,
-						query,
-						params,
-						searchText,
-					})
-					reject(error)
-				} else {
-					resolve(rows)
-				}
+		query += ` ORDER BY \`id\` ${sort === "desc" ? "DESC" : "ASC"}`
+
+		if ((page >= 0) && !isNaN(Number(page))) {
+			query += ` LIMIT ${LoginListPaginationLimit} OFFSET ${Number(page) * LoginListPaginationLimit}`
+		}
+
+		db?.all(query, params, (error, rows: LoginList[]) => {
+			if (error) {
+				reportError("Error while retrieving settings", {
+					message: error.message,
+					query,
+					params,
+					searchText,
+				})
+				reject(error)
+			} else {
+				resolve(rows)
 			}
-		)
+		})
 	})
 }
 

@@ -5,8 +5,17 @@ export * from "@globalTypes"
 
 export type StateType = {
 	isLoading: boolean
-	logins: LoginList[]
-	loginsNumber: number
+	logins: {
+		data: LoginList[]
+		loading: boolean
+		error: boolean
+		pagination: {
+			page: number
+			count: number
+			sort: "asc" | "desc"
+			hasMore: boolean
+		},
+	}
 	activeLoginId: null | number
 	searchText: string
 	appInformation: AppInformationType

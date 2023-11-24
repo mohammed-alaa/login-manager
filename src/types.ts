@@ -25,7 +25,8 @@ export type LoginItem = {
 
 export type LoginList = Array<Exclude<LoginItem, "password">>
 export type RetrieveLoginListType = {
-	loginsNumber: number
+	hasMore: boolean
+	count: number
 	logins: LoginList
 }
 
@@ -44,4 +45,16 @@ export type AppInformationType = {
 	customAppHeader: boolean
 	appName: string
 	version: string
+	homepage: string
+	description: string
+	repository: string
+	bugs: {
+		url: string
+		email: string
+	}
+	author: {
+		name: string
+		email: string
+		url: string
+	}
 }

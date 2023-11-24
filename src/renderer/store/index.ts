@@ -17,21 +17,41 @@ import type {
 
 const state: StateType = reactive<StateType>({
 	isLoading: false,
-	logins: [],
-	loginsNumber: 0,
+	logins: {
+		data: [],
+		loading: false,
+		error: false,
+		pagination: {
+			page: 0,
+			count: 0,
+			sort: "desc",
+			hasMore: false,
+		},
+	},
 	activeLoginId: null,
 	searchText: "",
 	appInformation: {
+		customAppHeader: false,
 		appName: "",
 		version: "",
-		customAppHeader: false,
+		homepage: "",
+		description: "",
+		repository: "",
+		author: {
+			name: "",
+			email: "",
+			url: "",
+		},
+		bugs: {
+			email: "",
+			url: "",
+		},
 	},
 })
 
 const getters: GetterType = {
 	getIsLoading: computed(() => state.isLoading),
-	getLoginList: computed(() => state.logins),
-	loginsNumber: computed(() => state.loginsNumber),
+	getLogins: computed(() => state.logins),
 	getActiveLoginId: computed({
 		get: () => state.activeLoginId,
 		set: (value: null | number) => (state.activeLoginId = value),
@@ -47,6 +67,13 @@ const store: StoreType = reactive<StoreType>({
 		isActiveLoginValid: computed(
 			() => getters.getActiveLoginId.value !== null
 		),
+		getLoginList: computed(() => getters.getLogins.value.data),
+		isLoginListError: computed(() => getters.getLogins.value.error),
+		isLoginListLoading: computed(() => getters.getLogins.value.loading),
+		loginsNumber: computed(() => getters.getLogins.value.pagination.count),
+		getLoginListPage: computed(() => getters.getLogins.value.pagination.page),
+		getLoginListSort: computed(() => getters.getLogins.value.pagination.sort),
+		isLoginListHasMore: computed(() => getters.getLogins.value.pagination.hasMore),
 	},
 	init: function () {
 		this.checkForAppHeader()
@@ -68,18 +95,36 @@ const store: StoreType = reactive<StoreType>({
 		})
 	},
 	retrieveLogins: function (): Promise<LoginList> {
+		if (this.getters.isLoginListLoading) {
+			return
+		}
+
+		this.state.logins.loading = true
+		this.state.logins.error = false
+
 		return new Promise((resolve, reject) => {
 			axios
-				.get("/logins", { params: { search: this.getters.getSearchText }})
+				.get("/logins", {
+					params: {
+						search: this.getters.getSearchText,
+						page: this.getters.getLoginListPage,
+						sort: this.getters.getLoginListSort,
+					},
+				})
 				.then((response) => {
 					const data: RetrieveLoginListType = response.data
-					this.state.logins = data.logins
-					this.state.loginsNumber = data.loginsNumber
+					this.state.logins.pagination.page++
+					this.state.logins.pagination.hasMore = data.hasMore
+					this.state.logins.pagination.count = data.count
+					this.state.logins.data = [...this.state.logins.data, ...data.logins]
 					resolve(data.logins)
 				})
 				.catch((error) => {
-					console.log("error", error)
+					this.state.logins.error = true
 					reject(error)
+				})
+				.finally(() => {
+					this.state.logins.loading = false
 				})
 		})
 	},
@@ -109,6 +154,14 @@ const store: StoreType = reactive<StoreType>({
 	},
 	searchLogins: function (searchText: string): Promise<LoginList> {
 		this.state.searchText = searchText.trim()
+		this.state.logins.pagination.page = 0
+		this.state.logins.data = []
+		return this.retrieveLogins()
+	},
+	updateLoginsSortOrder: function (): Promise<LoginList> {
+		this.state.logins.pagination.sort = (this.getters.getLoginListSort === "asc" ? "desc" : "asc")
+		this.state.logins.pagination.page = 0
+		this.state.logins.data = []
 		return this.retrieveLogins()
 	},
 	resetActiveLoginId: function () {
