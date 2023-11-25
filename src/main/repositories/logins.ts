@@ -26,14 +26,18 @@ export function countLogins(): Promise<number> {
 }
 
 export const hasMore = (count: number, page: number): boolean => {
-	return (count > (page * LoginListPaginationLimit))
+	return count > page * LoginListPaginationLimit
 }
 
-export function retrieveLogins(searchText: string = "", page: number = 0, sort: "asc" | "desc" = "desc") {
+export function retrieveLogins(
+	searchText: string = "",
+	page: number = 0,
+	sort: "asc" | "desc" = "desc"
+) {
 	return new Promise((resolve, reject) => {
 		const db = getDatabaseInstanceOrFail()
 		let query = "SELECT `id`, `website`, `username` FROM `logins`"
-		let params = []
+		const params = []
 
 		if (searchText.trim().length) {
 			searchText = searchText.replace(/_/g, "\\_").replace(/%/g, "\\%")
@@ -44,8 +48,10 @@ export function retrieveLogins(searchText: string = "", page: number = 0, sort: 
 
 		query += ` ORDER BY \`id\` ${sort === "desc" ? "DESC" : "ASC"}`
 
-		if ((page >= 0) && !isNaN(Number(page))) {
-			query += ` LIMIT ${LoginListPaginationLimit} OFFSET ${Number(page) * LoginListPaginationLimit}`
+		if (page >= 0 && !isNaN(Number(page))) {
+			query += ` LIMIT ${LoginListPaginationLimit} OFFSET ${
+				Number(page) * LoginListPaginationLimit
+			}`
 		}
 
 		db?.all(query, params, (error, rows: LoginList[]) => {

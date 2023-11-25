@@ -14,7 +14,7 @@ export type StateType = {
 			count: number
 			sort: "asc" | "desc"
 			hasMore: boolean
-		},
+		}
 	}
 	activeLoginId: null | number
 	searchText: string

@@ -12,7 +12,7 @@ const handle: ResponseHandler = async (res, response) => {
 		response(res, 200, {
 			logins,
 			count,
-			hasMore: hasMore(count, page)
+			hasMore: hasMore(count, page),
 		})
 	} catch (error: any) {
 		reportError("Error while retrieving logins", {

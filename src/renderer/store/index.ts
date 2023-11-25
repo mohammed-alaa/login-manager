@@ -71,9 +71,15 @@ const store: StoreType = reactive<StoreType>({
 		isLoginListError: computed(() => getters.getLogins.value.error),
 		isLoginListLoading: computed(() => getters.getLogins.value.loading),
 		loginsNumber: computed(() => getters.getLogins.value.pagination.count),
-		getLoginListPage: computed(() => getters.getLogins.value.pagination.page),
-		getLoginListSort: computed(() => getters.getLogins.value.pagination.sort),
-		isLoginListHasMore: computed(() => getters.getLogins.value.pagination.hasMore),
+		getLoginListPage: computed(
+			() => getters.getLogins.value.pagination.page
+		),
+		getLoginListSort: computed(
+			() => getters.getLogins.value.pagination.sort
+		),
+		isLoginListHasMore: computed(
+			() => getters.getLogins.value.pagination.hasMore
+		),
 	},
 	init: function () {
 		this.checkForAppHeader()
@@ -116,7 +122,10 @@ const store: StoreType = reactive<StoreType>({
 					this.state.logins.pagination.page++
 					this.state.logins.pagination.hasMore = data.hasMore
 					this.state.logins.pagination.count = data.count
-					this.state.logins.data = [...this.state.logins.data, ...data.logins]
+					this.state.logins.data = [
+						...this.state.logins.data,
+						...data.logins,
+					]
 					resolve(data.logins)
 				})
 				.catch((error) => {
@@ -159,7 +168,8 @@ const store: StoreType = reactive<StoreType>({
 		return this.retrieveLogins()
 	},
 	updateLoginsSortOrder: function (): Promise<LoginList> {
-		this.state.logins.pagination.sort = (this.getters.getLoginListSort === "asc" ? "desc" : "asc")
+		this.state.logins.pagination.sort =
+			this.getters.getLoginListSort === "asc" ? "desc" : "asc"
 		this.state.logins.pagination.page = 0
 		this.state.logins.data = []
 		return this.retrieveLogins()

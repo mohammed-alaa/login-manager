@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from "vue"
+import { computed } from "vue"
 import store from "@store"
 import AppIcon from "@components/AppIcon"
 import AppButton from "@components/AppButton"
@@ -19,15 +19,14 @@ const isLoginActive = (loginId: number) => loginId === getActiveLoginId.value
 const retrieveLogin = (loginId: number) => (getActiveLoginId.value = loginId)
 const updateLoginsSortOrder = () => store.updateLoginsSortOrder()
 const loginListScroll = (e) => {
-	if (isLoginListLoading.value || !isLoginListHasMore.value)
-		return
+	if (isLoginListLoading.value || !isLoginListHasMore.value) return
 
-    if (
-        Math.ceil(e.target.scrollTop + e.target.clientHeight) >
-        e.target.scrollHeight - 20
-    ) {
-        store.retrieveLogins()
-    }
+	if (
+		Math.ceil(e.target.scrollTop + e.target.clientHeight) >
+		e.target.scrollHeight - 20
+	) {
+		store.retrieveLogins()
+	}
 }
 </script>
 
@@ -38,22 +37,29 @@ const loginListScroll = (e) => {
 			'flex flex-col': loginsNumber,
 		}"
 	>
-	<div class="sticky top-0 z-10 py-2 px-4 bg-main shadow-md shadow-black/40 flex items-center justify-between">
-		<p class="text-gray">{{ loginsNumber }} logins</p>
-		<AppButton
-			rounded="circle"
-			color="secondary"
-			variant="outlined"
-			:disabled="isLoginListLoading"
-			@click="updateLoginsSortOrder"
+		<div
+			class="sticky top-0 z-10 py-2 px-4 bg-main shadow-md shadow-black/40 flex items-center justify-between"
 		>
-			<AppIcon :icon="`sort-${getLoginListSort}ending`" />
-		</AppButton>
-	</div>
+			<p class="text-gray">{{ loginsNumber }} logins</p>
+			<AppButton
+				rounded="circle"
+				color="secondary"
+				variant="outlined"
+				:disabled="isLoginListLoading"
+				@click="updateLoginsSortOrder"
+			>
+				<AppIcon :icon="`sort-${getLoginListSort}ending`" />
+			</AppButton>
+		</div>
 		<transition-group name="swap">
 			<template v-if="isLoginListLoading">
 				<div class="h-full flex items-center justify-center text-white">
-					<AppIcon animated size="lg" icon="refresh" class="animate-spin" />
+					<AppIcon
+						animated
+						size="lg"
+						icon="refresh"
+						class="animate-spin"
+					/>
 				</div>
 			</template>
 			<template v-else-if="logins.length">
