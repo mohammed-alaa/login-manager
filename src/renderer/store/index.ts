@@ -13,6 +13,7 @@ import type {
 	CreateEditFormData,
 	AppInformationType,
 	RetrieveLoginListType,
+	ChangePrimaryPasswordForm,
 } from "@types"
 
 const state: StateType = reactive<StateType>({
@@ -161,17 +162,19 @@ const store: StoreType = reactive<StoreType>({
 				.catch((error) => reject(error.response.data))
 		})
 	},
-	searchLogins: function (searchText: string): Promise<LoginList> {
-		this.state.searchText = searchText.trim()
+	resetLoginsPaginationData: function () {
 		this.state.logins.pagination.page = 0
 		this.state.logins.data = []
+	},
+	searchLogins: function (searchText: string): Promise<LoginList> {
+		this.state.searchText = searchText.trim()
+		this.resetLoginsPaginationData()
 		return this.retrieveLogins()
 	},
 	updateLoginsSortOrder: function (): Promise<LoginList> {
 		this.state.logins.pagination.sort =
 			this.getters.getLoginListSort === "asc" ? "desc" : "asc"
-		this.state.logins.pagination.page = 0
-		this.state.logins.data = []
+		this.resetLoginsPaginationData()
 		return this.retrieveLogins()
 	},
 	resetActiveLoginId: function () {
@@ -210,6 +213,7 @@ const store: StoreType = reactive<StoreType>({
 					params: { loginId: this.getters.getActiveLoginId },
 				})
 				.then(() => {
+					this.resetLoginsPaginationData()
 					this.retrieveLogins()
 					this.resetActiveLoginId()
 					resolve()
@@ -242,6 +246,14 @@ const store: StoreType = reactive<StoreType>({
 	},
 	minimizeApplication: function () {
 		this.dispatchEvent("minimize-application")
+	},
+	changePassword: function (data: ChangePrimaryPasswordForm) {
+		return new Promise((resolve, reject) => {
+			axios
+				.put("/settings/change-password", data)
+				.then(() => resolve())
+				.catch((error: ChangePrimaryPasswordForm) => reject(error.response.data.errors))
+		})
 	},
 })
 

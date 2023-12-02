@@ -56,7 +56,7 @@ export function retrieveLogins(
 
 		db?.all(query, params, (error, rows: LoginList[]) => {
 			if (error) {
-				reportError("Error while retrieving settings", {
+				reportError("Error while retrieving logins", {
 					message: error.message,
 					query,
 					params,
@@ -118,15 +118,9 @@ export function createLogin(data: CreateEditFormData) {
 
 export function updateLogin(loginId: number, data: CreateEditFormData) {
 	return new Promise((resolve, reject) => {
-		let password = data.password
-
-		if (password.trim().length) {
-			password = encryptPassword(process.env.PASSWORD, password)
-		}
-
 		runQuery(
 			"UPDATE `logins` SET `website` = ?, `username` = ?, `password` = ? WHERE `id` = ?",
-			[data.website, data.username, password, loginId]
+			[data.website, data.username, data.password, loginId]
 		)
 			.then((result) => resolve(!!result.changes))
 			.catch((error: Error) => {
@@ -139,6 +133,36 @@ export function updateLogin(loginId: number, data: CreateEditFormData) {
 				})
 				reject(error)
 			})
+	})
+}
+
+export function retrieveAllAndUpdateEachWithCB(callback: any) {
+	return new Promise((resolve, reject) => {
+		const db = getDatabaseInstanceOrFail()
+
+		db?.each("SELECT * FROM `logins`", [], async (error, row: LoginItem) => {
+			if (error) {
+				reportError("Error while retrieving logins and updating with callback", {
+					message: error.message,
+				})
+				reject(error)
+			} else {
+				try {
+					await callback(row)
+				} catch (error: any) {
+					reject(error)
+				}
+			}
+		}, (error) => {
+			if (error) {
+				reportError("Error after finished retrieving logins and updating with callback", {
+					message: error.message,
+				})
+				reject(error)
+			} else {
+				resolve()
+			}
+		})
 	})
 }
 

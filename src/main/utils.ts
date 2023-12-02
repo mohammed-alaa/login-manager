@@ -1,3 +1,5 @@
+import { app } from "electron"
+import { resolve } from "path"
 import { encrypt, decrypt } from "aes256"
 import { compareSync, hashSync, genSaltSync } from "bcrypt"
 import { getLogger } from "./logger"
@@ -43,6 +45,10 @@ export const isDevelopment = () => {
 	return process.env.NODE_ENV === "development"
 }
 
+export const getAppDataPath = () => {
+	return resolve(app.getPath("appData"), app.getName())
+}
+
 export const reportError = (message: string, context: object = {}) => {
 	if (isDevelopment()) {
 		console.error(message, context)
@@ -66,4 +72,16 @@ export const debug = <T>(
 		console.log(message)
 		getLogger()?.info(message)
 	}
+}
+
+export const formatZodError = (errors) => {
+	let formatedErrors = {}
+	Object.entries(errors).forEach(([key, value]) => {
+		// "_errors" is coming fom zod, so ignoring it
+		if (key !== "_errors") {
+			formatedErrors[key] = value?._errors?.[0] ?? ""
+		}
+	})
+
+	return formatedErrors
 }

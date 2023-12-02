@@ -13,6 +13,7 @@ import createLogin from "@routes/logins/createLogin"
 import updateLogin from "@routes/logins/updateLogin"
 import retrieveLogin from "@routes/logins/retrieveLogin"
 import deleteLogin from "@routes/logins/deleteLogin"
+import changePassword from "@routes/settings/changePassword"
 
 let _server: http.Server | null = null
 const port = import.meta.env.MAIN_VITE_SERVER_PORT ?? 3000
@@ -37,6 +38,11 @@ const _routes: Route[] = [
 		path: "/settings",
 		method: "PUT",
 		handler: updateSetting,
+	},
+	{
+		path: "/settings/change-password",
+		method: "PUT",
+		handler: changePassword,
 	},
 	{
 		path: "/logins?",

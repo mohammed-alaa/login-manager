@@ -6,6 +6,12 @@ export type InstallForm = {
 	confirmedPrimaryPassword: string
 }
 
+export type ChangePrimaryPasswordForm = {
+	currentPrimaryPassword: string
+	newPrimaryPassword: string
+	confirmNewPrimaryPassword: string
+}
+
 export type LoginForm = {
 	primaryPassword: string
 }
