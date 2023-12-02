@@ -183,11 +183,10 @@ app.on("activate", () => {
 // At this point, you can create browser windows and perform other most of the app initialization tasks.
 // This event is emitted once per application lifecycle, shortly after the app starts up.
 app.on("ready", async () => {
-	const appPath = getAppDataPath()
 	initLogger()
 
 	try {
-		await initDatabase(appPath)
+		await initDatabase()
 	} catch (error: any) {
 		reportError("Error while initializing database", { error: error })
 		dialog.showErrorBox("Initialization Error", error.message)
@@ -224,10 +223,6 @@ if (isInDevelopment) {
 		process.on("SIGINT", () => app.quit())
 		process.on("SIGHUP", () => app.quit())
 	}
-}
-
-const getAppDataPath = () => {
-	return join(app.getPath("appData"), app.getName())
 }
 
 // IPCMain Events
