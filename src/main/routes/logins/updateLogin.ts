@@ -1,5 +1,5 @@
 import type { CreateEditFormData } from "@types"
-import { reportError } from "@utils"
+import { reportError, encryptPassword } from "@utils"
 import { updateLogin } from "@repositories/logins"
 
 const loginNotFound: ResponseHandler = (res, response) => {
@@ -12,6 +12,10 @@ const handle: ResponseHandler = async (res, response) => {
 
 	if (!loginId) {
 		return loginNotFound(res, response)
+	}
+
+	if (body.password.trim().length) {
+		body.password = encryptPassword(process.env.PASSWORD, body.password)
 	}
 
 	updateLogin(loginId, body)

@@ -16,7 +16,7 @@ const handle: ResponseHandler = (res, response) => {
 	retrieveLogin(loginId)
 		.then((login: LoginItem) => {
 			if (login) {
-				if (login.password) {
+				if (login.password.trim().length) {
 					login.password = decryptPassword(
 						process.env.PASSWORD,
 						login.password
