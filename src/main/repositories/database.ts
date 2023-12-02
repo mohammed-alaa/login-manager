@@ -1,9 +1,10 @@
 import { existsSync, writeFile } from "fs"
 import { resolve } from "path"
 import sqlite from "sqlite3"
-import { debug, reportError } from "@utils"
+import { debug, reportError, getAppDataPath } from "@utils"
 
 let _dbInstance: sqlite.Database | null = null
+const DATABASE_FILE_NAME = "database.db"
 export type valueTypeValues = "string" | "number" | "boolean" | "json"
 
 export const runQuery = (
@@ -80,8 +81,14 @@ const createDatabaseTablesSync = async (): Promise<void> => {
 	})
 }
 
-const createDatabaseFile = (appPath: string): Promise<string> => {
-	const dbPath = resolve(appPath, "database.db")
+export const getMainDatabaseFileName = () => DATABASE_FILE_NAME
+
+export const getDatabaseFilePath = (dbFileName: string = DATABASE_FILE_NAME) => {
+	return resolve(getAppDataPath(), dbFileName)
+}
+
+const createDatabaseFile = (): Promise<string> => {
+	const dbPath = getDatabaseFilePath(DATABASE_FILE_NAME)
 
 	return new Promise((resolve, reject) => {
 		if (existsSync(dbPath)) {
@@ -94,7 +101,6 @@ const createDatabaseFile = (appPath: string): Promise<string> => {
 					message: error.message,
 					context: {
 						dbPath,
-						appPath,
 					},
 				})
 				reject(error)
@@ -145,11 +151,11 @@ export const exportFromDatabaseValue = (
 	}
 }
 
-export const initDatabase = (appPath: string): Promise<void> => {
+export const initDatabase = (): Promise<void> => {
 	return new Promise((resolve, reject) => {
-		createDatabaseFile(appPath)
+		createDatabaseFile()
 			.then((dbFile) => {
-				debug("appPath", appPath)
+				debug("appPath", getAppDataPath())
 				_dbInstance = new sqlite.Database(
 					dbFile,
 					sqlite.OPEN_READWRITE,
@@ -158,7 +164,6 @@ export const initDatabase = (appPath: string): Promise<void> => {
 							reportError("Error connecting to database", {
 								message: error.message,
 								context: {
-									appPath,
 									dbFile,
 								},
 							})
@@ -203,4 +208,28 @@ export const getDatabaseInstanceOrFail = () => {
 	}
 
 	return _dbInstance
+}
+
+export const beginTransactionDB = () => {
+	return new Promise((resolve, reject) => {
+		runQuery("BEGIN TRANSACTION;")
+			.then(() => resolve())
+			.catch(() => reject())
+	})
+}
+
+export const commitTransaction = () => {
+	return new Promise((resolve, reject) => {
+		runQuery("COMMIT;")
+			.then(() => resolve())
+			.catch(() => reject())
+	})
+}
+
+export const rollbackTransaction = () => {
+	return new Promise((resolve, reject) => {
+		runQuery("ROLLBACK;")
+			.then(() => resolve())
+			.catch(() => reject())
+	})
 }
