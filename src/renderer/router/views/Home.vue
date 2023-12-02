@@ -9,7 +9,11 @@ import SearchLogins from "@components/SearchLogins"
 
 const isActiveLoginValid = computed(() => store.getters.isActiveLoginValid)
 
-onMounted(() => store.retrieveLogins())
+onMounted(() => {
+	store.resetLoginsPaginationData()
+	store.retrieveLogins()
+})
+
 onUnmounted(() => {
 	store.resetActiveLoginId()
 	store.resetSearch()
