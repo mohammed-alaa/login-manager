@@ -32,18 +32,32 @@ const props = withDefaults(defineProps<ButtonProps>(), {
 const emits = defineEmits(["click"])
 
 const isButtonDisabled = computed(() => props.disabled || props.loading)
-const roundedComputed = computed(() => ({
-	"rounded-sm": props.rounded === "sm",
-	"rounded-md": props.rounded === "md",
-	"rounded-lg": props.rounded === "lg",
-	"rounded-circle": props.rounded === "circle",
-}))
 
-const sizeComputed = computed(() => ({
-	"text-sm px-2 py-1": props.size === "sm",
-	"text-md px-2 py-1": props.size === "md",
-	"text-lg px-[0.8rem] py-[0.375rem]": props.size === "lg",
-}))
+const classesComputed = computed(() => {
+	const classes = [`btn-${props.size} btn-${props.color} btn-${props.variant}`]
+
+	props.active && classes.push("active")
+	props.block && classes.push("w-full")
+	isButtonDisabled.value && classes.push("opacity-70 cursor-not-allowed pointer-events-auto")
+	classes.push(
+		props.size === "sm"
+			? "text-sm px-1.5 py-0.5"
+			: props.size === "lg"
+				? "text-lg px-3 py-1.5"
+				: "text-md px-2 py-1"
+	)
+	classes.push(
+		props.rounded === "circle"
+		? "rounded-circle"
+		: props.rounded === "lg"
+			? "rounded-lg"
+			: props.rounded === "sm"
+				? "rounded-sm"
+				: "rounded-md"
+	)
+
+	return classes
+})
 
 const buttonClicked = (e: MouseEvent) => {
 	if (isButtonDisabled.value || props.type === "submit") {
@@ -57,18 +71,8 @@ const buttonClicked = (e: MouseEvent) => {
 
 <template>
 	<button
-		class="btn capitalize transition ease-in-out border-2"
-		:class="[
-			`btn-${size} btn-${color} btn-${variant}`,
-			{
-				...sizeComputed,
-				...roundedComputed,
-				active: active,
-				'w-full': block,
-				'opacity-70 cursor-not-allowed pointer-events-auto':
-					isButtonDisabled,
-			},
-		]"
+		class="btn capitalize transition ease-in-out border-2 font-medium"
+		:class="classesComputed"
 		:type="type"
 		:disabled="isButtonDisabled"
 		:aria-disabled="isButtonDisabled"
@@ -82,7 +86,6 @@ const buttonClicked = (e: MouseEvent) => {
 			<template v-if="loading">
 				<AppIcon
 					start-space
-					animated
 					icon="refresh"
 					class="animate-spin"
 				/>

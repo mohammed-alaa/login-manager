@@ -55,8 +55,6 @@ const loginListScroll = (e) => {
 			<template v-if="isLoginListLoading">
 				<div class="h-full flex items-center justify-center text-white">
 					<AppIcon
-						animated
-						size="lg"
 						icon="refresh"
 						class="animate-spin"
 					/>

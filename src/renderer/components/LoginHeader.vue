@@ -22,14 +22,12 @@ const openSettings = () => router.push({ name: "settings" })
 		</div>
 		<div class="flex items-center gap-2">
 			<AppButton
-				id="newLogin"
 				theme="outline-primary"
 				rounded="circle"
 				@click="createNewLogin"
 			>
 				<AppIcon icon="plus" />
 			</AppButton>
-
 			<AppButton
 				theme="outline-warning"
 				rounded="circle"
