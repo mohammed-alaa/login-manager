@@ -107,6 +107,17 @@ export default {
 				md: ["1rem", "1.5rem"],
 				lg: ["1.125rem", "1.75rem"],
 			},
+			animation: {
+				progress: 'progress 750ms ease-in-out infinite both alternate',
+			},
+			keyframes: {
+				progress: {
+					'0%': { width: "0", left: "-100%" },
+					'25%': { width: "0", left: "0" },
+					'75%': { width: "100%", left: "0" },
+					'100%': { width: "0", left: "100%" },
+				},
+			},
 		},
 	},
 	plugins: [],

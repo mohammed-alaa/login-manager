@@ -67,7 +67,6 @@ watch(activeLoginId, () => retrieveLogin(), { immediate: true })
 		<template v-if="activeLogin.loading">
 			<div class="text-lg text-center text-white">
 				<AppIcon
-					animated
 					end-space
 					icon="loader-2"
 					class="animate-spin"
@@ -121,8 +120,8 @@ watch(activeLoginId, () => retrieveLogin(), { immediate: true })
 					<AppIcon icon="password-user" />
 					<span>Password</span>
 					<AppButton
+						size="sm"
 						rounded="circle"
-						class="show-password"
 						color="warning"
 						:variant="`${
 							activeLogin.isPasswordVisible

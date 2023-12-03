@@ -38,10 +38,10 @@ const classesComputed = computed(() => {
 
 	props.active && classes.push("active")
 	props.block && classes.push("w-full")
-	isButtonDisabled.value && classes.push("opacity-70 cursor-not-allowed pointer-events-auto")
+	props.disabled && classes.push("opacity-70 cursor-not-allowed pointer-events-auto")
 	classes.push(
 		props.size === "sm"
-			? "text-sm px-1.5 py-0.5"
+			? "text-sm px-1.5 pt-0.5 pb-1"
 			: props.size === "lg"
 				? "text-lg px-3 py-1.5"
 				: "text-md px-2 py-1"
@@ -71,7 +71,7 @@ const buttonClicked = (e: MouseEvent) => {
 
 <template>
 	<button
-		class="btn capitalize transition ease-in-out border-2 font-medium"
+		class="btn capitalize transition transition-all ease-in-out border-2 font-medium relative overflow-hidden"
 		:class="classesComputed"
 		:type="type"
 		:disabled="isButtonDisabled"
@@ -82,14 +82,8 @@ const buttonClicked = (e: MouseEvent) => {
 		<slot>
 			<span class="text-white" v-text="text" />
 		</slot>
-		<transition name="fade">
-			<template v-if="loading">
-				<AppIcon
-					start-space
-					icon="refresh"
-					class="animate-spin"
-				/>
-			</template>
-		</transition>
+		<template v-if="loading">
+			<div class="rounded-lg h-1 bg-current opacity-25 absolute -bottom-[1px] animate-progress" />
+		</template>
 	</button>
 </template>
