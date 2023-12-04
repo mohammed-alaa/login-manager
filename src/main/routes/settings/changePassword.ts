@@ -6,15 +6,19 @@ import {
 	encryptPrimaryPassword,
 	formatZodError,
 } from "@utils"
-import type { LoginItem, ResponseHandler, ChangePrimaryPasswordForm } from "@types"
+import type {
+	LoginItem,
+	ResponseHandler,
+	ChangePrimaryPasswordForm,
+} from "@types"
 import { changePrimaryPasswordSchema } from "@schemas"
-import { retrieveSetting, updateSetting } from "@repositories/settings"
-import { updateLogin, retrieveAllAndUpdateEachWithCB } from "@repositories/logins"
 import {
 	beginTransactionDB,
 	commitTransaction,
 	rollbackTransaction,
-} from "@repositories/database"
+} from "@database"
+import { retrieveSetting, updateSetting } from "@repositories/settings"
+import { updateLogin, retrieveAllAndCallbackEach } from "@repositories/logins"
 
 const handle: ResponseHandler = async (res, response) => {
 	const body: ChangePrimaryPasswordForm = res.req.body
@@ -23,7 +27,7 @@ const handle: ResponseHandler = async (res, response) => {
 		changePrimaryPasswordSchema.parse(body)
 	} catch (error: any) {
 		return response(res, 422, {
-			errors: formatZodError(error.format())
+			errors: formatZodError(error.format()),
 		})
 	}
 
@@ -35,10 +39,16 @@ const handle: ResponseHandler = async (res, response) => {
 		const hashedPrimaryPassword = await retrieveSetting(
 			"hashedPrimaryPassword"
 		)
-		if (!validatePrimaryPassword(body.currentPrimaryPassword, hashedPrimaryPassword.value)) {
+		if (
+			!validatePrimaryPassword(
+				body.currentPrimaryPassword,
+				hashedPrimaryPassword.value
+			)
+		) {
 			return response(res, 401, {
 				errors: {
-					currentPrimaryPassword: "Current primary password is invalid",
+					currentPrimaryPassword:
+						"Current primary password is invalid",
 				},
 			})
 		}
@@ -56,11 +66,17 @@ const handle: ResponseHandler = async (res, response) => {
 	// Retrieve and update logins
 	try {
 		await beginTransactionDB()
-		await retrieveAllAndUpdateEachWithCB((login: LoginItem) => {
+		await retrieveAllAndCallbackEach((login: LoginItem) => {
 			let loginPassword = login.password
 			if (loginPassword.trim().length) {
-				loginPassword = decryptPassword(currentPrimaryPassword, loginPassword)
-				loginPassword = encryptPassword(newPrimaryPassword, loginPassword)
+				loginPassword = decryptPassword(
+					currentPrimaryPassword,
+					loginPassword
+				)
+				loginPassword = encryptPassword(
+					newPrimaryPassword,
+					loginPassword
+				)
 			}
 
 			login.password = loginPassword
@@ -82,7 +98,10 @@ const handle: ResponseHandler = async (res, response) => {
 	// Update the hashed primary password in settings table
 	try {
 		await beginTransactionDB()
-		await updateSetting("hashedPrimaryPassword", encryptPrimaryPassword(newPrimaryPassword))
+		await updateSetting(
+			"hashedPrimaryPassword",
+			encryptPrimaryPassword(newPrimaryPassword)
+		)
 		await commitTransaction()
 		process.env.PASSWORD = newPrimaryPassword
 	} catch (error: any) {

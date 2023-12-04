@@ -1,5 +1,10 @@
 import type { CreateEditFormData } from "@types"
 import { reportError, encryptPassword } from "@utils"
+import {
+	beginTransactionDB,
+	commitTransaction,
+	rollbackTransaction,
+} from "@database"
 import { updateLogin } from "@repositories/logins"
 
 const loginNotFound: ResponseHandler = (res, response) => {
@@ -18,17 +23,19 @@ const handle: ResponseHandler = async (res, response) => {
 		body.password = encryptPassword(process.env.PASSWORD, body.password)
 	}
 
-	updateLogin(loginId, body)
-		.then((updated) => {
-			updated ? response(res, 204, {}) : loginNotFound(res, response)
+	try {
+		await beginTransactionDB()
+		const updated = await updateLogin(loginId, body)
+		await commitTransaction()
+		return updated ? response(res, 204, {}) : loginNotFound(res, response)
+	} catch (error: any) {
+		await rollbackTransaction()
+		reportError("Error while update login", {
+			message: error.message,
 		})
-		.catch((error: any) => {
-			reportError("Error while update login", {
-				message: error.message,
-			})
 
-			response(res, 500, { message: error.message })
-		})
+		response(res, 500, { message: error.message })
+	}
 }
 
 export default handle

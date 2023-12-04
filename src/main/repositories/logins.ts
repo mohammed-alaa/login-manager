@@ -136,37 +136,48 @@ export function updateLogin(loginId: number, data: CreateEditFormData) {
 	})
 }
 
-export function retrieveAllAndUpdateEachWithCB(callback: any) {
+export function retrieveAllAndCallbackEach(callback: any) {
 	return new Promise((resolve, reject) => {
 		const db = getDatabaseInstanceOrFail()
 
-		db?.each("SELECT * FROM `logins`", [], async (error, row: LoginItem) => {
-			if (error) {
-				reportError("Error while retrieving logins and updating with callback", {
-					message: error.message,
-				})
-				reject(error)
-			} else {
-				try {
-					await callback(row)
-				} catch (error: any) {
+		db?.each(
+			"SELECT * FROM `logins`",
+			[],
+			async (error, row: LoginItem) => {
+				if (error) {
+					reportError(
+						"Error while retrieving logins and updating with callback",
+						{
+							message: error.message,
+						}
+					)
 					reject(error)
+				} else {
+					try {
+						await callback(row)
+					} catch (error: any) {
+						reject(error)
+					}
+				}
+			},
+			(error) => {
+				if (error) {
+					reportError(
+						"Error after finished retrieving logins and updating with callback",
+						{
+							message: error.message,
+						}
+					)
+					reject(error)
+				} else {
+					resolve()
 				}
 			}
-		}, (error) => {
-			if (error) {
-				reportError("Error after finished retrieving logins and updating with callback", {
-					message: error.message,
-				})
-				reject(error)
-			} else {
-				resolve()
-			}
-		})
+		)
 	})
 }
 
-export function deleteLogin(loginId: number) {
+export async function deleteLogin(loginId: number) {
 	return new Promise((resolve, reject) => {
 		runQuery("DELETE FROM `logins` WHERE `id` = ?", [loginId])
 			.then((result) => resolve(!!result.changes))
