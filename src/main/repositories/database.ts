@@ -83,7 +83,9 @@ const createDatabaseTablesSync = async (): Promise<void> => {
 
 export const getMainDatabaseFileName = () => DATABASE_FILE_NAME
 
-export const getDatabaseFilePath = (dbFileName: string = DATABASE_FILE_NAME) => {
+export const getDatabaseFilePath = (
+	dbFileName: string = DATABASE_FILE_NAME
+) => {
 	return resolve(getAppDataPath(), dbFileName)
 }
 

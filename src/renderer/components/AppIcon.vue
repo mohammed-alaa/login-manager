@@ -5,7 +5,7 @@ interface IconProps {
 	endSpace?: boolean
 }
 
-const props = withDefaults(defineProps<IconProps>(), {
+withDefaults(defineProps<IconProps>(), {
 	startSpace: false,
 	endSpace: false,
 })

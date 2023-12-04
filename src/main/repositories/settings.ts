@@ -125,7 +125,7 @@ export async function updateSetting(name: string, newValue: any) {
 				setting.type,
 			]
 		)
-			.then((/*result*/) => resolve(null))
+			.then(() => resolve(null))
 			.catch((error: Error) => {
 				reportError("Error updating application setting", {
 					message: error.message,

@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { reactive, computed } from "vue"
-import type { ChangePrimaryPasswordForm } from "@types"
+import { reactive } from "vue"
 import store from "@store"
 import Modal from "@components/Modal"
 import AppIcon from "@components/AppIcon"
@@ -41,7 +40,7 @@ const changePrimaryPassword = () => {
 	}
 
 	closeModal()
-	changePassword.loading = true	
+	changePassword.loading = true
 	changePassword.private.changed = false
 	changePassword.errors = {
 		general: "",
@@ -50,10 +49,11 @@ const changePrimaryPassword = () => {
 		confirmNewPrimaryPassword: "",
 	}
 
-	store.changePassword(changePassword.data)
+	store
+		.changePassword(changePassword.data)
 		.then(() => (changePassword.private.changed = true))
 		.catch((errors) => {
-			if ('general' in errors) {
+			if ("general" in errors) {
 				changePassword.errors.general = errors.general
 			} else {
 				changePassword.errors = errors
@@ -64,48 +64,55 @@ const changePrimaryPassword = () => {
 </script>
 
 <template>
-	<h3 class="text-white mb-2 underline underline-offset-4">Primary password</h3>
-	<AppForm
-		class="flex flex-wrap gap-4"
-		@submit="preChangePrimaryPassword"
-	>
-		<div class="w-full">
-			<template v-if="changePassword.errors.general?.length">
-				<AppAlert type="danger" :alert-text="changePassword.errors.general" />
-			</template>
-			<template v-else-if="changePassword.private.changed">
-				<AppAlert type="success" alert-text="Primary password has been changed successfully." />
-			</template>
-		</div>
+	<h3 class="text-white">Primary password</h3>
+	<AppForm class="flex flex-wrap gap-4" @submit="preChangePrimaryPassword">
+		<template v-if="changePassword.errors.general?.length">
+			<div class="w-full">
+				<AppAlert
+					type="danger"
+					:alert-text="changePassword.errors.general"
+				/>
+			</div>
+		</template>
+		<template v-else-if="changePassword.private.changed">
+			<div class="w-full">
+				<AppAlert
+					type="success"
+					alert-text="Primary password has been changed successfully."
+				/>
+			</div>
+		</template>
 		<div class="w-full">
 			<FormInput
 				id="current-primary-password"
+				v-model="changePassword.data.currentPrimaryPassword"
 				label="Current Primary Password"
 				placeholder="Current Primary Password"
 				:error="changePassword.errors.currentPrimaryPassword"
-				v-model="changePassword.data.currentPrimaryPassword"
 			/>
 		</div>
 		<div class="flex-1">
 			<FormInput
 				id="new-primary-password"
+				v-model="changePassword.data.newPrimaryPassword"
 				label="New Primary Password"
 				placeholder="New Primary Password"
 				:error="changePassword.errors.newPrimaryPassword"
-				v-model="changePassword.data.newPrimaryPassword"
 			/>
 		</div>
 		<div class="flex-1">
 			<FormInput
 				id="confirm-new-primary-password"
+				v-model="changePassword.data.confirmNewPrimaryPassword"
 				label="Confirm New Primary Password"
 				placeholder="Confirm New Primary Password"
 				:error="changePassword.errors.confirmNewPrimaryPassword"
-				v-model="changePassword.data.confirmNewPrimaryPassword"
 			/>
 		</div>
 		<div class="w-full">
-			<GeneratePassword v-model="changePassword.private.generatedPassword" />
+			<GeneratePassword
+				v-model="changePassword.private.generatedPassword"
+			/>
 		</div>
 		<div class="w-full">
 			<AppButton
@@ -120,31 +127,52 @@ const changePrimaryPassword = () => {
 	</AppForm>
 
 	<Modal
-		title="Change Primary Password"
 		v-model="changePassword.private.showInstructionModal"
+		title="Change Primary Password"
 	>
-		<div class="text-gray">
-			<p>
-				<span class="underline">The process involves the following:</span>
+		<div class="text-gray flex flex-col gap-2">
+			<div>
+				<span class="underline"
+					>The process involves the following:</span
+				>
 				<ul>
 					<li>
-						<span>Retrieve all logins and do the following for each login:</span>
+						<span
+							>Retrieve all logins and do the following for each
+							login:</span
+						>
 						<ol>
-							<li>Decrypting the password using the current (old) primary password.</li>
-							<li>Encrypting the password using the new primary password.</li>
-							<li>Update the login's password to the new encrypted password.</li>
+							<li>
+								Decrypting the password using the current (old)
+								primary password.
+							</li>
+							<li>
+								Encrypting the password using the new primary
+								password.
+							</li>
+							<li>
+								Update the login's password to the new encrypted
+								password.
+							</li>
 						</ol>
 					</li>
-					<li>Update the primary password with the new entered one.</li>
+					<li>
+						Update the primary password with the new entered one.
+					</li>
 				</ul>
-			</p>
-			<p class="mt-2">
+			</div>
+			<div>
 				<span class="underline">Instructions:</span>
 				<ul>
-					<li>Ensure you have exported/backed up the current data.</li>
-					<li>Changes are not saved if any error has occured at any point.</li>
+					<li>
+						Ensure you have exported/backed up the current data.
+					</li>
+					<li>
+						Changes are not saved if any error has occured at any
+						point.
+					</li>
 				</ul>
-			</p>
+			</div>
 		</div>
 		<template #actions>
 			<div class="flex items-center justify-between gap-2">
@@ -157,11 +185,7 @@ const changePrimaryPassword = () => {
 					<AppIcon end-space icon="check" />
 					<span>Change</span>
 				</AppButton>
-				<AppButton
-					block
-					color="secondary"
-					@click="closeModal"
-				>
+				<AppButton block color="secondary" @click="closeModal">
 					<AppIcon end-space icon="x" />
 					<span>Cancel</span>
 				</AppButton>

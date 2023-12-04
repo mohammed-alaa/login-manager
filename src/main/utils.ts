@@ -75,7 +75,7 @@ export const debug = <T>(
 }
 
 export const formatZodError = (errors) => {
-	let formatedErrors = {}
+	const formatedErrors = {}
 	Object.entries(errors).forEach(([key, value]) => {
 		// "_errors" is coming fom zod, so ignoring it
 		if (key !== "_errors") {

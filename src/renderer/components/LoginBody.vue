@@ -66,11 +66,7 @@ watch(activeLoginId, () => retrieveLogin(), { immediate: true })
 	<div class="login-body flex flex-col gap-4 text-gray p-4">
 		<template v-if="activeLogin.loading">
 			<div class="text-lg text-center text-white">
-				<AppIcon
-					end-space
-					icon="loader-2"
-					class="animate-spin"
-				/>
+				<AppIcon end-space icon="loader-2" class="animate-spin" />
 				<span>Loading...</span>
 			</div>
 		</template>

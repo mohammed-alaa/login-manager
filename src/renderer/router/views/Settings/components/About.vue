@@ -57,11 +57,7 @@ const getAppInformation = computed(() => store.getters.getAppInformation)
 					title="Github Repository"
 					:href="getAppInformation.repository"
 				>
-					<AppIcon
-						end-space
-						size="lg"
-						icon="brand-github"
-					/>
+					<AppIcon end-space size="lg" icon="brand-github" />
 				</a>
 			</div>
 		</div>

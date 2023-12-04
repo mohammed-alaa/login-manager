@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from "vue"
-import AppIcon from "@components/AppIcon"
 
 interface ButtonProps {
 	type?: "button" | "submit"
@@ -34,26 +33,29 @@ const emits = defineEmits(["click"])
 const isButtonDisabled = computed(() => props.disabled || props.loading)
 
 const classesComputed = computed(() => {
-	const classes = [`btn-${props.size} btn-${props.color} btn-${props.variant}`]
+	const classes = [
+		`btn-${props.size} btn-${props.color} btn-${props.variant}`,
+	]
 
 	props.active && classes.push("active")
 	props.block && classes.push("w-full")
-	props.disabled && classes.push("opacity-70 cursor-not-allowed pointer-events-auto")
+	props.disabled &&
+		classes.push("opacity-70 cursor-not-allowed pointer-events-auto")
 	classes.push(
 		props.size === "sm"
 			? "text-sm px-1.5 pt-0.5 pb-1"
 			: props.size === "lg"
-				? "text-lg px-3 py-1.5"
-				: "text-md px-2 py-1"
+			? "text-lg px-3 py-1.5"
+			: "text-md px-2 py-1"
 	)
 	classes.push(
 		props.rounded === "circle"
-		? "rounded-circle"
-		: props.rounded === "lg"
+			? "rounded-circle"
+			: props.rounded === "lg"
 			? "rounded-lg"
 			: props.rounded === "sm"
-				? "rounded-sm"
-				: "rounded-md"
+			? "rounded-sm"
+			: "rounded-md"
 	)
 
 	return classes
@@ -83,7 +85,9 @@ const buttonClicked = (e: MouseEvent) => {
 			<span class="text-white" v-text="text" />
 		</slot>
 		<template v-if="loading">
-			<div class="rounded-lg h-1 bg-current opacity-25 absolute -bottom-[1px] animate-progress" />
+			<div
+				class="rounded-lg h-1 bg-current opacity-25 absolute -bottom-[1px] animate-progress"
+			/>
 		</template>
 	</button>
 </template>

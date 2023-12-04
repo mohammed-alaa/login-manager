@@ -43,10 +43,13 @@ export const changePrimaryPasswordSchema = z
 			required_error: "Confirm the new primary password.",
 		}),
 	})
-	.refine((data) => data.newPrimaryPassword === data.confirmNewPrimaryPassword, {
-		message: "New primary passwords don't match",
-		path: ["confirmNewPrimaryPassword"],
-	})
+	.refine(
+		(data) => data.newPrimaryPassword === data.confirmNewPrimaryPassword,
+		{
+			message: "New primary passwords don't match",
+			path: ["confirmNewPrimaryPassword"],
+		}
+	)
 
 export const loginFormSchema = z.object({
 	primaryPassword: z

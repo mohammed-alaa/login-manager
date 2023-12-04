@@ -54,10 +54,7 @@ const loginListScroll = (e) => {
 		<transition-group name="swap">
 			<template v-if="isLoginListLoading">
 				<div class="h-full flex items-center justify-center text-white">
-					<AppIcon
-						icon="refresh"
-						class="animate-spin"
-					/>
+					<AppIcon icon="refresh" class="animate-spin" />
 				</div>
 			</template>
 			<template v-else-if="logins.length">
