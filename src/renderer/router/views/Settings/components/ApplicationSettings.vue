@@ -72,6 +72,12 @@ onMounted(() => {
 			<span class="sr-only">Loading...</span>
 		</div>
 	</template>
+	<template v-else-if="appSettings.get.error">
+		<AppAlert
+			type="danger"
+			alert-text="Error occured while loading application startup settings."
+		/>
+	</template>
 	<template v-else>
 		<AppForm class="flex flex-col gap-2" @submit="saveApplicationSettings">
 			<template v-if="appSettings.update.error">

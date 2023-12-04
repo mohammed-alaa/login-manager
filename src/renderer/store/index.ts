@@ -89,16 +89,16 @@ const store: StoreType = reactive<StoreType>({
 		return new Promise((resolve, reject) => {
 			axios
 				.get("/settings")
-				.then((response) => resolve(response.data.settings))
-				.catch((error) => reject(error.response.data))
+				.then((data) => resolve(data.settings))
+				.catch((error) => reject(error.data))
 		})
 	},
 	updateAppSettings: function (settings: Settings): Promise<Settings> {
 		return new Promise((resolve, reject) => {
 			axios
 				.put("/settings/application", settings)
-				.then((response) => resolve(response.data.settings))
-				.catch((error) => reject(error.response.data))
+				.then((data) => resolve(data.settings))
+				.catch((error) => reject(error.data))
 		})
 	},
 	retrieveLogins: function (): Promise<LoginList> {
@@ -118,8 +118,7 @@ const store: StoreType = reactive<StoreType>({
 						sort: this.getters.getLoginListSort,
 					},
 				})
-				.then((response) => {
-					const data: RetrieveLoginListType = response.data
+				.then((data: RetrieveLoginListType) => {
 					this.state.logins.pagination.page++
 					this.state.logins.pagination.hasMore = data.hasMore
 					this.state.logins.pagination.count = data.count
@@ -131,7 +130,7 @@ const store: StoreType = reactive<StoreType>({
 				})
 				.catch((error) => {
 					this.state.logins.error = true
-					reject(error)
+					reject(error.data)
 				})
 				.finally(() => {
 					this.state.logins.loading = false
@@ -142,8 +141,8 @@ const store: StoreType = reactive<StoreType>({
 		return new Promise((resolve, reject) => {
 			axios
 				.get("/login", { params: { loginId } })
-				.then(({ data }) => resolve(data.login))
-				.catch((error) => reject(error.response.data))
+				.then((data) => resolve(data.login))
+				.catch((error) => reject(error.data))
 		})
 	},
 	install: function (data: InstallForm): Promise<void> {
@@ -151,7 +150,7 @@ const store: StoreType = reactive<StoreType>({
 			axios
 				.post("/install", data)
 				.then(() => resolve())
-				.catch((error) => reject(error.response.data))
+				.catch((error) => reject(error.data))
 		})
 	},
 	login: function (data: LoginForm): Promise<void> {
@@ -159,7 +158,7 @@ const store: StoreType = reactive<StoreType>({
 			axios
 				.post("/login", data)
 				.then(() => resolve())
-				.catch((error) => reject(error.response.data))
+				.catch((error) => reject(error.data))
 		})
 	},
 	resetLoginsPaginationData: function () {
@@ -188,7 +187,7 @@ const store: StoreType = reactive<StoreType>({
 			axios
 				.post("/logins", data)
 				.then(() => resolve())
-				.catch((error) => reject(error.response.data))
+				.catch((error) => reject(error.data))
 		})
 	},
 	updateLogin: function (
@@ -199,7 +198,7 @@ const store: StoreType = reactive<StoreType>({
 			axios
 				.put("/login", data, { params: { loginId } })
 				.then(() => resolve())
-				.catch((error) => reject(error.response.data))
+				.catch((error) => reject(error.data))
 		})
 	},
 	deleteLogin: function (): Promise<void> {
@@ -253,7 +252,7 @@ const store: StoreType = reactive<StoreType>({
 				.put("/settings/change-password", data)
 				.then(() => resolve())
 				.catch((error: ChangePrimaryPasswordForm) =>
-					reject(error.response.data.errors)
+					reject(error.data?.errors ?? {})
 				)
 		})
 	},

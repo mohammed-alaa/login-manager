@@ -53,11 +53,15 @@ const changePrimaryPassword = () => {
 		.changePassword(changePassword.data)
 		.then(() => (changePassword.private.changed = true))
 		.catch((errors) => {
-			if ("general" in errors) {
-				changePassword.errors.general = errors.general
-			} else {
-				changePassword.errors = errors
-			}
+			changePassword.errors.currentPrimaryPassword =
+				errors?.currentPrimaryPassword ?? ""
+			changePassword.errors.newPrimaryPassword =
+				errors?.newPrimaryPassword ?? ""
+			changePassword.errors.confirmNewPrimaryPassword =
+				errors?.confirmNewPrimaryPassword ?? ""
+			changePassword.errors.general =
+				errors?.general ??
+				"Error occured when trying to change primary password."
 		})
 		.finally(() => (changePassword.loading = false))
 }

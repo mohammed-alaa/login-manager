@@ -11,12 +11,13 @@ const isActiveLoginValid = computed(() => store.getters.isActiveLoginValid)
 
 onMounted(() => {
 	store.resetLoginsPaginationData()
-	store.retrieveLogins()
+	store.retrieveLogins().catch(() => {})
 })
 
 onUnmounted(() => {
-	store.resetActiveLoginId()
 	store.resetSearch()
+	store.resetActiveLoginId()
+	store.resetLoginsPaginationData()
 })
 </script>
 
