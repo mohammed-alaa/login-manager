@@ -6,7 +6,7 @@ import { Request, Response, Route, ResponseFunction } from "@types"
 
 import retrieveLogins from "@routes/logins/retrieveLogins"
 import retrieveSettings from "@routes/settings/retrieveSettings"
-import updateSetting from "@routes/settings/updateSetting"
+import updateApplicationSettings from "@routes/settings/updateApplicationSettings"
 import install from "@routes/install"
 import login from "@routes/login"
 import createLogin from "@routes/logins/createLogin"
@@ -35,9 +35,9 @@ const _routes: Route[] = [
 		handler: retrieveSettings,
 	},
 	{
-		path: "/settings",
+		path: "/settings/application",
 		method: "PUT",
-		handler: updateSetting,
+		handler: updateApplicationSettings,
 	},
 	{
 		path: "/settings/change-password",

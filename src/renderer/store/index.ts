@@ -96,7 +96,7 @@ const store: StoreType = reactive<StoreType>({
 	updateAppSettings: function (settings: Settings): Promise<Settings> {
 		return new Promise((resolve, reject) => {
 			axios
-				.put("/settings", settings)
+				.put("/settings/application", settings)
 				.then((response) => resolve(response.data.settings))
 				.catch((error) => reject(error.response.data))
 		})
@@ -252,7 +252,9 @@ const store: StoreType = reactive<StoreType>({
 			axios
 				.put("/settings/change-password", data)
 				.then(() => resolve())
-				.catch((error: ChangePrimaryPasswordForm) => reject(error.response.data.errors))
+				.catch((error: ChangePrimaryPasswordForm) =>
+					reject(error.response.data.errors)
+				)
 		})
 	},
 })
