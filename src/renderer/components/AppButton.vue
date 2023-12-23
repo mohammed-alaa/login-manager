@@ -6,7 +6,7 @@ interface ButtonProps {
 	text?: string
 	loading?: boolean
 	size?: "sm" | "md" | "lg"
-	variant?: "filled" | "outlined"
+	variant?: "filled" | "outlined" | "text"
 	color?: "primary" | "danger" | "secondary" | "warning" | string
 	active?: boolean
 	rounded?: false | "sm" | "md" | "lg" | "circle"
@@ -45,17 +45,17 @@ const classesComputed = computed(() => {
 		props.size === "sm"
 			? "text-sm px-1.5 pt-0.5 pb-1"
 			: props.size === "lg"
-			? "text-lg px-3 py-1.5"
-			: "text-md px-2 py-1"
+			  ? "text-lg px-3 py-1.5"
+			  : "text-md px-2 py-1"
 	)
 	classes.push(
 		props.rounded === "circle"
 			? "rounded-circle"
 			: props.rounded === "lg"
-			? "rounded-lg"
-			: props.rounded === "sm"
-			? "rounded-sm"
-			: "rounded-md"
+			  ? "rounded-lg"
+			  : props.rounded === "sm"
+			    ? "rounded-sm"
+			    : "rounded-md"
 	)
 
 	return classes
@@ -73,7 +73,7 @@ const buttonClicked = (e: MouseEvent) => {
 
 <template>
 	<button
-		class="btn capitalize transition transition-all ease-in-out border-2 font-medium relative overflow-hidden"
+		class="btn capitalize transition-all ease-in-out border-2 font-medium relative overflow-hidden"
 		:class="classesComputed"
 		:type="type"
 		:disabled="isButtonDisabled"
