@@ -16,6 +16,8 @@ onBeforeMount(() => store.init())
 		<template v-if="canShowCustomAppHeader">
 			<AppHeader />
 		</template>
-		<router-view />
+		<div class="wrapper">
+			<router-view />
+		</div>
 	</main>
 </template>

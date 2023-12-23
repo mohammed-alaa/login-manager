@@ -52,19 +52,22 @@ body
 
 .app-header
 	-webkit-app-region: drag !important
+	height: env(titlebar-area-height)
+	top: 0
+	@apply sticky
 	@apply border-b border-main
-	@apply ps-4
-	@apply h-topbar
-
-	.title
-		-webkit-app-region: drag !important
-		@apply select-none
+	@apply ps-4 w-full z-20 flex items-center
 
 .main
 	--app-available-height: 100vh
+	--app-available-y: 0
 
 	&.appHeader
-		--app-available-height: calc(100vh - theme('height.topbar'))
+		--app-available-height: calc(100vh - env(titlebar-area-height))
+		--app-available-y: env(titlebar-area-height)
+
+.top-safe-area
+	top: var(--app-available-y)
 
 .h-fullscreen
 	height: var(--app-available-height)
@@ -137,11 +140,11 @@ body
 
 .swap-enter-from, .swap-leave-to
 	@apply opacity-0
-	transform: scaleY(0)
+	// transform: scaleY(0)
 
 .swap-leave-active
 	z-index: -1
-	@apply absolute
+	// @apply absolute
 
 ::-webkit-scrollbar
 	@apply w-2

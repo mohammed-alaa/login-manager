@@ -101,10 +101,17 @@ const createMainWindow = async () => {
 		minHeight: 600,
 		title: packageJson.productName,
 		autoHideMenuBar: true,
+		frame: isWindows(),
 		titleBarStyle: isWindows() ? "hidden" : "default",
 		center: true,
 		darkTheme: true,
-		transparent: true,
+		titleBarOverlay: isWindows()
+			? {
+					color: "#0000",
+					symbolColor: "#fff",
+					height: 48,
+			  }
+			: false,
 		show: isInDevelopment
 			? true
 			: !(settings?.startOnLogin && settings?.startMinimized),
@@ -226,25 +233,6 @@ if (isInDevelopment) {
 }
 
 // IPCMain Events
-ipcMain.handle("exit-application", () => {
-	app.quit()
-	return true
-})
-
-ipcMain.handle("minimize-application", () => {
-	mainWindow?.minimize()
-	return true
-})
-
-ipcMain.handle("maximize-application", () => {
-	if (!mainWindow) {
-		return false
-	}
-
-	mainWindow.isMaximized() ? mainWindow.restore() : mainWindow.maximize()
-	return true
-})
-
 ipcMain.handle("app-init", (): AppInformationType => {
 	return {
 		customAppHeader: canShowCustomAppHeader(),
