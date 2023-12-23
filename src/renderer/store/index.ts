@@ -28,7 +28,7 @@ const state = reactive({
 			hasMore: false,
 		},
 	},
-	activeLoginId: null as null | number,
+	activeLoginId: -1,
 	searchText: "",
 	appInformation: {
 		customAppHeader: false,
@@ -54,7 +54,7 @@ const getters = {
 	getLogins: computed(() => state.logins),
 	getActiveLoginId: computed({
 		get: () => state.activeLoginId,
-		set: (value: null | number) => (state.activeLoginId = value),
+		set: (value: number) => (state.activeLoginId = value),
 	}),
 	getSearchText: computed(() => state.searchText),
 	getAppInformation: computed(() => state.appInformation),
@@ -64,9 +64,7 @@ const store = reactive({
 	state,
 	getters: {
 		...getters,
-		isActiveLoginValid: computed(
-			() => getters.getActiveLoginId.value !== null
-		),
+		isActiveLoginValid: computed(() => getters.getActiveLoginId.value > -1),
 		getLoginList: computed(() => getters.getLogins.value.data),
 		isLoginListError: computed(() => getters.getLogins.value.error),
 		isLoginListLoading: computed(() => getters.getLogins.value.loading),
@@ -166,7 +164,7 @@ const store = reactive({
 				})
 		})
 	},
-	retrieveLogin: function (loginId: number) {
+	retrieveLogin: function (loginId: number): Promise<LoginItem> {
 		return new Promise((resolve, reject) => {
 			this.sendAxiosRequest<{ login: LoginItem }>(
 				this.constructUrl("/login", {
@@ -212,7 +210,7 @@ const store = reactive({
 		return this.retrieveLogins()
 	},
 	resetActiveLoginId: function () {
-		this.state.activeLoginId = null
+		this.state.activeLoginId = -1
 	},
 	resetSearch: function () {
 		this.state.searchText = ""

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted } from "vue"
 import store from "@store"
-import LoginList from "@components/LoginList"
-import LoginHeader from "@components/LoginHeader"
-import LoginBody from "@components/LoginBody"
-import LoginBodyEmpty from "@components/LoginBodyEmpty"
-import SearchLogins from "@components/SearchLogins"
+import LoginList from "./components/LoginList.vue"
+import LoginBody from "./components/LoginBody.vue"
+import LoginHeader from "./components/LoginHeader.vue"
+import SearchLogins from "./components/SearchLogins.vue"
+import LoginBodyEmpty from "./components/LoginBodyEmpty.vue"
 
 const isActiveLoginValid = computed(() => store.getters.isActiveLoginValid)
 

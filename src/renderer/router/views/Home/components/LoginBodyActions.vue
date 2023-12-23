@@ -4,7 +4,7 @@ import { useRouter } from "vue-router"
 import store from "@store"
 import AppIcon from "@components/AppIcon"
 import AppButton from "@components/AppButton"
-import DeleteConfirmation from "@components/DeleteConfirmation"
+import DeleteConfirmation from "./DeleteConfirmation.vue"
 
 const router = useRouter()
 

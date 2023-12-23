@@ -5,7 +5,7 @@ import store from "@store"
 import AppIcon from "@components/AppIcon"
 import Tooltip from "@components/Tooltip"
 import AppButton from "@components/AppButton"
-import LoginItem from "@components/LoginItem"
+import LoginItem from "./LoginItem.vue"
 
 const logins = computed<LoginList>(() => store.getters.getLoginList)
 const getLoginListSort = computed(() => store.getters.getLoginListSort)

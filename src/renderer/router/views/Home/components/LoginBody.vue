@@ -6,8 +6,7 @@ import AppIcon from "@components/AppIcon"
 import AppAlert from "@components/AppAlert"
 import AppButton from "@components/AppButton"
 import AppButtonCopy from "@components/AppButtonCopy"
-import LoginBodyActions from "@components/LoginBodyActions"
-import DeleteConfirmation from "@components/DeleteConfirmation"
+import LoginBodyActions from "./LoginBodyActions.vue"
 
 const activeLogin = reactive({
 	data: {
@@ -20,8 +19,6 @@ const activeLogin = reactive({
 	isPasswordVisible: false,
 })
 
-const getMode = computed(() => store.getters.getMode)
-const isDeleting = computed(() => getMode.value === "d")
 const activeLoginId = computed(() => store.getters.getActiveLoginId)
 const isActiveLoginValid = computed(() => store.getters.isActiveLoginValid)
 const getLoginWebsiteAddress = computed(() => ({
@@ -41,8 +38,6 @@ const getLoginPassword = computed(() => ({
 	copy: activeLogin.data.password,
 }))
 
-const cancelDeleting = () => store.dispatch("setViewMode")
-const confirmDeletion = () => store.dispatch("deleteLogin")
 const retrieveLogin = () => {
 	if (!isActiveLoginValid.value || activeLogin.loading) {
 		return
@@ -146,12 +141,6 @@ watch(activeLoginId, () => retrieveLogin(), { immediate: true })
 					<AppButtonCopy :value="getLoginPassword.copy" />
 				</div>
 			</div>
-			<template v-if="isDeleting">
-				<DeleteConfirmation
-					@confirm-deleting="confirmDeletion"
-					@cancel-deleting="cancelDeleting"
-				/>
-			</template>
 		</template>
 	</div>
 </template>
