@@ -1,9 +1,7 @@
 import { reactive, computed } from "vue"
+import type { AxiosError } from "axios"
 import axios from "@/plugins/axios"
 import type {
-	StateType,
-	StoreType,
-	GetterType,
 	WindowType,
 	Settings,
 	LoginItem,
@@ -12,14 +10,15 @@ import type {
 	InstallForm,
 	CreateEditFormData,
 	AppInformationType,
+	AxsiosErrorResponse,
 	RetrieveLoginListType,
 	ChangePrimaryPasswordForm,
 } from "@types"
 
-const state: StateType = reactive<StateType>({
+const state = reactive({
 	isLoading: false,
 	logins: {
-		data: [],
+		data: [] as LoginList,
 		loading: false,
 		error: false,
 		pagination: {
@@ -29,7 +28,7 @@ const state: StateType = reactive<StateType>({
 			hasMore: false,
 		},
 	},
-	activeLoginId: null,
+	activeLoginId: null as null | number,
 	searchText: "",
 	appInformation: {
 		customAppHeader: false,
@@ -47,10 +46,10 @@ const state: StateType = reactive<StateType>({
 			email: "",
 			url: "",
 		},
-	},
+	} as AppInformationType,
 })
 
-const getters: GetterType = {
+const getters = {
 	getIsLoading: computed(() => state.isLoading),
 	getLogins: computed(() => state.logins),
 	getActiveLoginId: computed({
@@ -61,7 +60,7 @@ const getters: GetterType = {
 	getAppInformation: computed(() => state.appInformation),
 }
 
-const store: StoreType = reactive<StoreType>({
+const store = reactive({
 	state,
 	getters: {
 		...getters,
@@ -85,40 +84,70 @@ const store: StoreType = reactive<StoreType>({
 	init: function () {
 		this.checkForAppHeader()
 	},
+	constructUrl: function (url: string, params: any = {}): string {
+		const urlParams = new URLSearchParams(params).toString()
+		return `${url}?${urlParams}`
+	},
+	parseAxiosError: function (error: AxiosError): AxsiosErrorResponse {
+		return {
+			data: error.response?.data ?? {},
+			status: error.response?.status ?? 500,
+			isCancelled: error.message.startsWith("timeout"),
+		}
+	},
+	sendAxiosRequest: function <T>(
+		url: string,
+		method: "get" | "post" | "put" | "delete",
+		data: any = {}
+	): Promise<T> {
+		return new Promise((resolve, reject) => {
+			axios({
+				url,
+				method,
+				data,
+			})
+				.then((response) => resolve(response.data))
+				.catch((error: AxiosError) =>
+					reject(this.parseAxiosError(error))
+				)
+		})
+	},
 	retrieveAppSettings: function (): Promise<Settings> {
 		return new Promise((resolve, reject) => {
-			axios
-				.get("/settings")
-				.then((data) => resolve(data.settings))
+			this.sendAxiosRequest<{ settings: Settings }>("/settings", "get")
+				.then(({ settings }) => resolve(settings))
 				.catch((error) => reject(error.data))
 		})
 	},
 	updateAppSettings: function (settings: Settings): Promise<Settings> {
 		return new Promise((resolve, reject) => {
-			axios
-				.put("/settings/application", settings)
+			this.sendAxiosRequest<{ settings: Settings }>(
+				"/settings/application",
+				"put",
+				settings
+			)
 				.then((data) => resolve(data.settings))
 				.catch((error) => reject(error.data))
 		})
 	},
 	retrieveLogins: function (): Promise<LoginList> {
 		if (this.getters.isLoginListLoading) {
-			return
+			return Promise.reject()
 		}
 
 		this.state.logins.loading = true
 		this.state.logins.error = false
 
 		return new Promise((resolve, reject) => {
-			axios
-				.get("/logins", {
-					params: {
-						search: this.getters.getSearchText,
-						page: this.getters.getLoginListPage,
-						sort: this.getters.getLoginListSort,
-					},
-				})
-				.then((data: RetrieveLoginListType) => {
+			this.sendAxiosRequest<RetrieveLoginListType>(
+				this.constructUrl("/logins", {
+					search: this.getters.getSearchText,
+					page: this.getters.getLoginListPage,
+					sort: this.getters.getLoginListSort,
+				}),
+				"get"
+			)
+				.then((data) => {
 					this.state.logins.pagination.page++
 					this.state.logins.pagination.hasMore = data.hasMore
 					this.state.logins.pagination.count = data.count
@@ -137,26 +166,32 @@ const store: StoreType = reactive<StoreType>({
 				})
 		})
 	},
-	retrieveLogin: function (loginId: number): Promise<LoginItem> {
+	retrieveLogin: function (loginId: number) {
 		return new Promise((resolve, reject) => {
-			axios
-				.get("/login", { params: { loginId } })
+			this.sendAxiosRequest<{ login: LoginItem }>(
+				this.constructUrl("/login", {
+					loginId,
+				}),
+				"get"
+			)
 				.then((data) => resolve(data.login))
 				.catch((error) => reject(error.data))
 		})
 	},
 	install: function (data: InstallForm): Promise<void> {
 		return new Promise((resolve, reject) => {
-			axios
-				.post("/install", data)
+			this.sendAxiosRequest<{ login: LoginItem }>(
+				"/install",
+				"post",
+				data
+			)
 				.then(() => resolve())
 				.catch((error) => reject(error.data))
 		})
 	},
 	login: function (data: LoginForm): Promise<void> {
 		return new Promise((resolve, reject) => {
-			axios
-				.post("/login", data)
+			this.sendAxiosRequest<Record<string, never>>("/login", "post", data)
 				.then(() => resolve())
 				.catch((error) => reject(error.data))
 		})
@@ -172,7 +207,7 @@ const store: StoreType = reactive<StoreType>({
 	},
 	updateLoginsSortOrder: function (): Promise<LoginList> {
 		this.state.logins.pagination.sort =
-			this.getters.getLoginListSort === "asc" ? "desc" : "asc"
+			this.state.logins.pagination.sort === "asc" ? "desc" : "asc"
 		this.resetLoginsPaginationData()
 		return this.retrieveLogins()
 	},
@@ -184,8 +219,11 @@ const store: StoreType = reactive<StoreType>({
 	},
 	createNewItem: function (data: CreateEditFormData): Promise<void> {
 		return new Promise((resolve, reject) => {
-			axios
-				.post("/logins", data)
+			this.sendAxiosRequest<Record<string, never>>(
+				"/logins",
+				"post",
+				data
+			)
 				.then(() => resolve())
 				.catch((error) => reject(error.data))
 		})
@@ -195,8 +233,13 @@ const store: StoreType = reactive<StoreType>({
 		data: CreateEditFormData
 	): Promise<void> {
 		return new Promise((resolve, reject) => {
-			axios
-				.put("/login", data, { params: { loginId } })
+			this.sendAxiosRequest<Record<string, never>>(
+				this.constructUrl("/login", {
+					loginId,
+				}),
+				"put",
+				data
+			)
 				.then(() => resolve())
 				.catch((error) => reject(error.data))
 		})
@@ -207,10 +250,12 @@ const store: StoreType = reactive<StoreType>({
 				reject()
 			}
 
-			axios
-				.delete("/login", {
-					params: { loginId: this.getters.getActiveLoginId },
-				})
+			this.sendAxiosRequest<Record<string, never>>(
+				this.constructUrl("/login", {
+					loginId: this.getters.getActiveLoginId,
+				}),
+				"delete"
+			)
 				.then(() => {
 					this.resetLoginsPaginationData()
 					this.retrieveLogins()
@@ -220,39 +265,38 @@ const store: StoreType = reactive<StoreType>({
 				.catch(() => reject())
 		})
 	},
-	dispatchEvent: function (eventName: string, { ...params } = {}) {
+	dispatchEvent: function <T>(
+		eventName: string,
+		{ ...params } = {}
+	): Promise<T> {
 		return new Promise((resolve, reject) => {
 			;(window as WindowType).ipcRenderer
 				.invoke(eventName, params)
-				.then((result: any) => resolve(result))
+				.then((result: T) => resolve(result))
 				.catch((error: any) => reject(error))
 		})
 	},
 	checkForAppHeader: function () {
-		this.dispatchEvent("app-init")
-			.then((result: AppInformationType) => {
+		this.dispatchEvent<AppInformationType>("app-init")
+			.then((result) => {
 				this.state.appInformation = result
 			})
 			.catch((error: any) => {
 				console.log("error", error)
 			})
 	},
-	maximizeApplication: function () {
-		this.dispatchEvent("maximize-application")
-	},
-	exitApplication: function () {
-		this.dispatchEvent("exit-application")
-	},
-	minimizeApplication: function () {
-		this.dispatchEvent("minimize-application")
-	},
-	changePassword: function (data: ChangePrimaryPasswordForm) {
+	changePassword: function (data: ChangePrimaryPasswordForm): Promise<void> {
 		return new Promise((resolve, reject) => {
-			axios
-				.put("/settings/change-password", data)
+			this.sendAxiosRequest<Record<string, never>>(
+				"/settings/change-password",
+				"put",
+				data
+			)
 				.then(() => resolve())
-				.catch((error: ChangePrimaryPasswordForm) =>
-					reject(error.data?.errors ?? {})
+				.catch((error) =>
+					reject(
+						(error.data?.errors ?? {}) as ChangePrimaryPasswordForm
+					)
 				)
 		})
 	},
