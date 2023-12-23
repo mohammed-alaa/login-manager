@@ -2,7 +2,11 @@
 export default {
 	content: {
 		relative: true,
-		files: ["./src/renderer/index.html", "./src/renderer/**/*.vue"],
+		files: [
+			"./node_modules/flowbite/**/*.js",
+			"./src/renderer/index.html",
+			"./src/renderer/**/*.vue",
+		],
 	},
 	theme: {
 		extend: {
@@ -108,17 +112,17 @@ export default {
 				lg: ["1.125rem", "1.75rem"],
 			},
 			animation: {
-				progress: 'progress 750ms ease-in-out infinite both alternate',
+				progress: "progress 750ms ease-in-out infinite both alternate",
 			},
 			keyframes: {
 				progress: {
-					'0%': { width: "0", left: "-100%" },
-					'25%': { width: "0", left: "0" },
-					'75%': { width: "100%", left: "0" },
-					'100%': { width: "0", left: "100%" },
+					"0%": { width: "0", left: "-100%" },
+					"25%": { width: "0", left: "0" },
+					"75%": { width: "100%", left: "0" },
+					"100%": { width: "0", left: "100%" },
 				},
 			},
 		},
 	},
-	plugins: [],
+	plugins: [require("flowbite/plugin")],
 }
