@@ -55,7 +55,9 @@ const classesComputed = computed(() => {
 			  ? "rounded-lg"
 			  : props.rounded === "sm"
 			    ? "rounded-sm"
-			    : "rounded-md"
+			    : props.rounded !== false
+			      ? "rounded-md"
+			      : ""
 	)
 
 	return classes
@@ -73,7 +75,7 @@ const buttonClicked = (e: MouseEvent) => {
 
 <template>
 	<button
-		class="btn capitalize transition-all ease-in-out border-2 font-medium relative overflow-hidden"
+		class="btn capitalize transition-all ease-in-out border-2 font-medium relative overflow-hiddena inline-block whitespace-pre"
 		:class="classesComputed"
 		:type="type"
 		:disabled="isButtonDisabled"
