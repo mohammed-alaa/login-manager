@@ -105,6 +105,10 @@ export default defineConfig({
 					),
 				},
 				{
+					find: "@layouts",
+					replacement: resolve(__dirname, "./src/renderer/layouts"),
+				},
+				{
 					find: "@views",
 					replacement: resolve(
 						__dirname,

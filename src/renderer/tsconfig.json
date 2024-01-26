@@ -20,7 +20,8 @@
 			"@views/*": ["./router/views/*"],
 			"@types": ["./types.ts"],
 			"@schemas": ["./schemas.ts"],
-			"@globalTypes": ["../types.ts"]
+			"@globalTypes": ["../types.ts"],
+			"@layouts/*": ["./layouts/*.vue"]
 		},
 		"lib": ["esnext", "dom", "dom.iterable", "scripthost"],
 		"types": ["vite/client"],
