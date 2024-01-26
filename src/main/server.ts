@@ -1,9 +1,14 @@
 import http from "http"
 import { URL } from "url"
-import getRawBody from "raw-body"
-import { debug } from "@utils"
-import { Request, Response, Route, ResponseFunction } from "@types"
-
+import requestParser from "./body-parsers"
+import { debug, reportError } from "@utils"
+import type {
+	Request,
+	Response,
+	Route,
+	ResponseFunction,
+	BodyParser,
+} from "@types"
 import retrieveLogins from "@routes/logins/retrieveLogins"
 import retrieveSettings from "@routes/settings/retrieveSettings"
 import updateApplicationSettings from "@routes/settings/updateApplicationSettings"
@@ -14,6 +19,7 @@ import updateLogin from "@routes/logins/updateLogin"
 import retrieveLogin from "@routes/logins/retrieveLogin"
 import deleteLogin from "@routes/logins/deleteLogin"
 import changePassword from "@routes/settings/changePassword"
+import importLogins from "@routes/import"
 
 let _server: http.Server | null = null
 const port = import.meta.env.MAIN_VITE_SERVER_PORT ?? 3000
@@ -69,6 +75,11 @@ const _routes: Route[] = [
 		method: "DELETE",
 		handler: deleteLogin,
 	},
+	{
+		path: "/import",
+		method: "POST",
+		handler: importLogins,
+	},
 ]
 
 const response: ResponseFunction = (res, statusCode, data = null) => {
@@ -96,19 +107,23 @@ const routeNotFoundResponse = (res: Response) => {
 	response(res, 404, { message: "Not Found" })
 }
 
-const parseBody = async (req: Request) => {
-	try {
-		const body = await getRawBody(req, {
-			encoding: true,
-		})
+const parseBody: BodyParser = (req, res) => {
+	return new Promise((resolve) => {
+		requestParser(req, res)
+			.then((body) => resolve(body))
+			.catch((error) => {
+				reportError("Error parsing body", {
+					message: error.message,
+				})
+				resolve({})
+			})
+	})
+}
 
-		return JSON.parse(body)
-	} catch (error: any) {
-		debug("Error parsing body", {
-			message: error.message,
-		})
-		return {}
-	}
+const matchRoute = (path: string, method: string) => {
+	return _routes.find((route: Route) => {
+		return route.path === path && route.method === method
+	})
 }
 
 const router = async (req: Request, res: Response) => {
@@ -130,12 +145,10 @@ const router = async (req: Request, res: Response) => {
 	if (method === "OPTIONS") {
 		return response(res, 200, { message: "OK" })
 	} else if (!["GET", "DELETE"].includes(method)) {
-		req.body = await parseBody(req)
+		req.body = await parseBody(req, res)
 	}
 
-	const route = _routes.find((route: Route) => {
-		return route.path === path && route.method === method
-	})
+	const route = matchRoute(path, method)
 
 	res.req = req
 	if (route) {

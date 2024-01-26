@@ -31,6 +31,7 @@
 		"aes256": "^1.1.0",
 		"bcrypt": "^5.1.1",
 		"flowbite": "^2.2.1",
+		"multer": "^1.4.5-lts.1",
 		"raw-body": "^2.5.2",
 		"sqlite3": "^5.1.6",
 		"winston": "^3.11.0",
@@ -38,6 +39,7 @@
 	},
 	"devDependencies": {
 		"@tabler/icons-webfont": "^2.40.0",
+		"@types/multer": "^1.4.11",
 		"@types/vue": "^2.0.0",
 		"@typescript-eslint/eslint-plugin": "^6.9.1",
 		"@typescript-eslint/parser": "^6.9.1",
