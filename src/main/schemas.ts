@@ -57,3 +57,21 @@ export const loginFormSchema = z.object({
 		.trim()
 		.min(8, "Password must be at least 8 characters."),
 })
+
+export const importFileSchema = z.object({
+	type: z.enum(["json", "csv"], {
+		required_error: "Type is required.",
+	}),
+	delimiter: z.optional(
+		z.string({ required_error: "Delimiter is required." })
+	),
+	isOldJSON: z.optional(z.boolean()),
+	oldJSONPassword: z.optional(
+		z.string({ required_error: "Password is required." })
+	),
+	columns: z.object({
+		website: z.string({ required_error: "Website column is required." }),
+		username: z.string({ required_error: "Username column is required." }),
+		password: z.string({ required_error: "Password column is required." }),
+	}),
+})

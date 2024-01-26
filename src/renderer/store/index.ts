@@ -10,6 +10,7 @@ import type {
 	InstallForm,
 	CreateEditFormData,
 	AppInformationType,
+	ImportFileDataType,
 	AxsiosErrorResponse,
 	RetrieveLoginListType,
 	ChangePrimaryPasswordForm,
@@ -96,13 +97,15 @@ const store = reactive({
 	sendAxiosRequest: function <T>(
 		url: string,
 		method: "get" | "post" | "put" | "delete",
-		data: any = {}
+		data: any = {},
+		headers: any = {}
 	): Promise<T> {
 		return new Promise((resolve, reject) => {
 			axios({
 				url,
 				method,
 				data,
+				headers,
 			})
 				.then((response) => resolve(response.data))
 				.catch((error: AxiosError) =>
@@ -296,6 +299,20 @@ const store = reactive({
 						(error.data?.errors ?? {}) as ChangePrimaryPasswordForm
 					)
 				)
+		})
+	},
+	importFile: function (data: ImportFileDataType): Promise<void> {
+		return new Promise((resolve, reject) => {
+			this.sendAxiosRequest<Record<string, never>>(
+				"/import",
+				"post",
+				data,
+				{
+					"Content-Type": "multipart/form-data",
+				}
+			)
+				.then(() => resolve())
+				.catch((error) => reject(error.data.errors ?? {}))
 		})
 	},
 })

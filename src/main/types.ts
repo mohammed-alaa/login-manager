@@ -3,9 +3,19 @@ import type { URLSearchParams } from "url"
 
 export * from "@globalTypes"
 
+export type FileType = {
+	size: number
+	buffer: Buffer
+	mimetype: string
+	encoding: string
+	fieldname: string
+	originalname: string
+}
+
 export type Request = IncomingMessage & {
 	body?: any
 	query?: URLSearchParams
+	files?: FileType[]
 }
 
 export type Response = ServerResponse & {
@@ -30,3 +40,8 @@ export type Route = {
 	method: string
 	handler: ResponseHandler
 }
+
+export type BodyParser = (
+	req: Request,
+	res: Response
+) => Promise<Record<string, any>>

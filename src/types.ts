@@ -64,3 +64,30 @@ export type AppInformationType = {
 		url: string
 	}
 }
+
+export type ImportFileDataType = {
+	type: "csv" | "json"
+	delimiter: string
+	isOldJSON: boolean
+	oldJSONPassword: string
+	file: File | null
+	columns: {
+		website: string | number
+		username: string | number
+		password: string | number
+	}
+}
+
+export type ImportFileErrorType = {
+	type?: string
+	delimiter?: string
+	isOldJSON?: string
+	oldJSONPassword?: string
+	file?: string
+	general?: string
+	columns?: {
+		website?: string
+		username?: string
+		password?: string
+	}
+}

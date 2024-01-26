@@ -32,6 +32,16 @@ const routes = [
 		name: "edit",
 		component: () => import("@views/Edit.vue"),
 	},
+	{
+		path: "/import",
+		name: "import",
+		component: () => import("@views/Import/index.vue"),
+	},
+	{
+		path: "/export",
+		name: "export",
+		component: () => import("@views/Export/index.vue"),
+	},
 ]
 
 const router = createRouter({
