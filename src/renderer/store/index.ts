@@ -14,6 +14,8 @@ import type {
 	AxsiosErrorResponse,
 	RetrieveLoginListType,
 	ChangePrimaryPasswordForm,
+	ExportDataType,
+	NoResponse,
 } from "@types"
 
 const state = reactive({
@@ -23,7 +25,7 @@ const state = reactive({
 		loading: false,
 		error: false,
 		pagination: {
-			page: 0,
+			page: 1,
 			count: 0,
 			sort: "desc",
 			hasMore: false,
@@ -190,15 +192,15 @@ const store = reactive({
 				.catch((error) => reject(error.data))
 		})
 	},
-	login: function (data: LoginForm): Promise<void> {
+	login: function (data: LoginForm["Data"]): Promise<void> {
 		return new Promise((resolve, reject) => {
-			this.sendAxiosRequest<Record<string, never>>("/login", "post", data)
+			this.sendAxiosRequest<NoResponse>("/login", "post", data)
 				.then(() => resolve())
-				.catch((error) => reject(error.data))
+				.catch(({ data }) => reject(data.errors as LoginForm["Errors"]))
 		})
 	},
 	resetLoginsPaginationData: function () {
-		this.state.logins.pagination.page = 0
+		this.state.logins.pagination.page = 1
 		this.state.logins.data = []
 	},
 	searchLogins: function (searchText: string): Promise<LoginList> {
@@ -220,11 +222,7 @@ const store = reactive({
 	},
 	createNewItem: function (data: CreateEditFormData): Promise<void> {
 		return new Promise((resolve, reject) => {
-			this.sendAxiosRequest<Record<string, never>>(
-				"/logins",
-				"post",
-				data
-			)
+			this.sendAxiosRequest<NoResponse>("/logins", "post", data)
 				.then(() => resolve())
 				.catch((error) => reject(error.data))
 		})
@@ -234,7 +232,7 @@ const store = reactive({
 		data: CreateEditFormData
 	): Promise<void> {
 		return new Promise((resolve, reject) => {
-			this.sendAxiosRequest<Record<string, never>>(
+			this.sendAxiosRequest<NoResponse>(
 				this.constructUrl("/login", {
 					loginId,
 				}),
@@ -251,7 +249,7 @@ const store = reactive({
 				reject()
 			}
 
-			this.sendAxiosRequest<Record<string, never>>(
+			this.sendAxiosRequest<NoResponse>(
 				this.constructUrl("/login", {
 					loginId: this.getters.getActiveLoginId,
 				}),
@@ -288,7 +286,7 @@ const store = reactive({
 	},
 	changePassword: function (data: ChangePrimaryPasswordForm): Promise<void> {
 		return new Promise((resolve, reject) => {
-			this.sendAxiosRequest<Record<string, never>>(
+			this.sendAxiosRequest<NoResponse>(
 				"/settings/change-password",
 				"put",
 				data
@@ -303,14 +301,16 @@ const store = reactive({
 	},
 	importFile: function (data: ImportFileDataType): Promise<void> {
 		return new Promise((resolve, reject) => {
-			this.sendAxiosRequest<Record<string, never>>(
-				"/import",
-				"post",
-				data,
-				{
-					"Content-Type": "multipart/form-data",
-				}
-			)
+			this.sendAxiosRequest<NoResponse>("/import", "post", data, {
+				"Content-Type": "multipart/form-data",
+			})
+				.then(() => resolve())
+				.catch((error) => reject(error.data.errors ?? {}))
+		})
+	},
+	export: function (data: ExportDataType["Data"]): Promise<void> {
+		return new Promise((resolve, reject) => {
+			this.sendAxiosRequest<NoResponse>("/export", "post", data)
 				.then(() => resolve())
 				.catch((error) => reject(error.data.errors ?? {}))
 		})

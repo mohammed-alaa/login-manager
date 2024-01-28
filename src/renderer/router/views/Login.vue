@@ -1,37 +1,43 @@
 <script setup lang="ts">
 import { reactive } from "vue"
 import { useRouter } from "vue-router"
+import type { LoginForm } from "@types"
+import { resetFormErrors } from "@utils"
 import store from "@store"
 import AppForm from "@components/AppForm"
 import FormInput from "@components/FormInput"
 import AppButton from "@components/AppButton"
 import AppIcon from "@components/AppIcon"
+import AppAlert from "@components/AppAlert"
 
 const router = useRouter()
 
 const loginForm = reactive({
-	password: "43mBcn8gqkXndZk6",
-	error: "",
 	loading: false,
+	data: {
+		primaryPassword: "43mBcn8gqkXndZk6",
+	} as LoginForm["Data"],
+	errors: {} as LoginForm["Errors"],
 })
 
-const formSubmit = async () => {
+const formSubmit = () => {
 	if (loginForm.loading) {
 		return
 	}
 
-	loginForm.error = ""
 	loginForm.loading = true
+	loginForm.errors = resetFormErrors<LoginForm["Errors"]>(loginForm.errors)
 
-	try {
-		await store.login({ primaryPassword: loginForm.password })
-		router.replace({ name: "home" })
-	} catch (error: any) {
-		const { errors, message } = error
-		loginForm.error = errors?.primaryPassword ?? message ?? ""
-	}
-
-	loginForm.loading = false
+	store
+		.login(loginForm.data)
+		.then(() => router.replace({ name: "home" }))
+		.catch((errors: LoginForm["Errors"]) => {
+			console.log("error", errors)
+			loginForm.errors = errors
+		})
+		.finally(() => {
+			loginForm.loading = false
+		})
 }
 </script>
 
@@ -43,13 +49,19 @@ const formSubmit = async () => {
 				<span>Login</span>
 			</h1>
 			<AppForm @submit="formSubmit">
+				<template v-if="loginForm.errors.general">
+					<AppAlert
+						type="danger"
+						:alert-text="loginForm.errors.general"
+					/>
+				</template>
 				<FormInput
 					id="password"
-					v-model="loginForm.password"
+					v-model="loginForm.data.primaryPassword"
 					class="mb-4"
 					label="Primary Password"
 					placeholder="Enter your primary password"
-					:error="loginForm.error"
+					:error="loginForm.errors.primaryPassword"
 				/>
 				<AppButton
 					block

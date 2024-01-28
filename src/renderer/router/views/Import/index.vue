@@ -41,7 +41,6 @@ const importFileJSONOptions = [
 
 const importData = reactive({
 	loading: false,
-	error: false,
 	data: {
 		type: "csv",
 		delimiter: ",",
