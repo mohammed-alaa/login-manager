@@ -12,10 +12,6 @@ export type ChangePrimaryPasswordForm = {
 	confirmNewPrimaryPassword: string
 }
 
-export type LoginForm = {
-	primaryPassword: string
-}
-
 export type Settings = {
 	startOnLogin: boolean
 	startMinimized: boolean
@@ -91,3 +87,25 @@ export type ImportFileErrorType = {
 		password?: string
 	}
 }
+
+export type ExportDataType = {
+	Data: {
+		type: "csv" | "json"
+	}
+	Errors: {
+		type?: string
+		general?: string
+	}
+}
+
+export type LoginForm = {
+	Data: {
+		primaryPassword: string
+	}
+	Errors: {
+		primaryPassword?: string
+		general?: string
+	}
+}
+
+export type NoResponse = Record<string, never>

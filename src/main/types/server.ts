@@ -1,8 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "http"
 import type { URLSearchParams } from "url"
 
-export * from "@globalTypes"
-
 export type FileType = {
 	size: number
 	buffer: Buffer

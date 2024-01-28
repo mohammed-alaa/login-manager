@@ -14,7 +14,7 @@
 		"skipLibCheck": true,
 		"paths": {
 			"@utils": ["./utils.ts"],
-			"@types": ["./types.ts"],
+			"@types": ["./types/index.ts"],
 			"@routes/*": ["routes/*"],
 			"@globalTypes": ["../types.ts"],
 			"@schemas": ["./schemas.ts"],

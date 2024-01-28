@@ -20,7 +20,10 @@ export default defineConfig({
 				},
 				{
 					find: "@types",
-					replacement: resolve(__dirname, "./src/main/types.ts"),
+					replacement: resolve(
+						__dirname,
+						"./src/main/types/index.ts"
+					),
 				},
 				{
 					find: "@globalTypes",
