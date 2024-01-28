@@ -1,43 +1,41 @@
-import { reportError, validatePrimaryPassword } from "@utils"
+import { reportError, validatePrimaryPassword, formatZodError } from "@utils"
 import type { ResponseHandler, LoginForm } from "@types"
 import { loginFormSchema } from "@schemas"
-import { retrieveSetting } from "@repositories/settings"
+import { SettingsRepository } from "@repositories/settings"
 
 const handle: ResponseHandler = async (res, response) => {
-	const body: LoginForm = res.req.body
-	const primaryPassword = body.primaryPassword
+	const body: LoginForm["Data"] = res.req.body
 	try {
-		loginFormSchema.parse({ primaryPassword })
+		loginFormSchema.parse(body)
 	} catch (error: any) {
-		const errors = error.format()
 		return response(res, 422, {
-			errors: {
-				primaryPassword: errors.primaryPassword?._errors?.[0] ?? "",
-			},
+			errors: formatZodError(error.format()),
 		})
 	}
 
+	const primaryPassword = body.primaryPassword
+
 	try {
-		const hashedPrimaryPassword = await retrieveSetting(
+		const settingsRepository = new SettingsRepository()
+		const hashedPrimaryPassword = (await settingsRepository.retrieveSetting(
 			"hashedPrimaryPassword"
-		)
-		if (
-			validatePrimaryPassword(
-				primaryPassword,
-				hashedPrimaryPassword?.value ?? ""
-			)
-		) {
+		)) as string
+		if (validatePrimaryPassword(primaryPassword, hashedPrimaryPassword)) {
 			process.env.PASSWORD = primaryPassword
 			response(res, 204, {})
 		} else {
 			response(res, 401, {
-				message: "Primary password is invalid",
+				errors: {
+					primaryPassword: "Primary password is invalid",
+				},
 			})
 		}
 	} catch (error: any) {
 		reportError(error)
 		response(res, error?.message ? 400 : 500, {
-			message: error?.message ?? error,
+			errors: {
+				general: error?.message ?? error,
+			} as LoginForm["Errors"],
 		})
 	}
 }

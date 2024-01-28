@@ -12,13 +12,8 @@ import type {
 	ChangePrimaryPasswordForm,
 } from "@types"
 import { changePrimaryPasswordSchema } from "@schemas"
-import {
-	beginTransactionDB,
-	commitTransaction,
-	rollbackTransaction,
-} from "@database"
-import { retrieveSetting, updateSetting } from "@repositories/settings"
-import { updateLogin, retrieveAllAndCallbackEach } from "@repositories/logins"
+import { LoginRepository } from "@repositories/logins"
+import { SettingsRepository } from "@repositories/settings"
 
 const handle: ResponseHandler = async (res, response) => {
 	const body: ChangePrimaryPasswordForm = res.req.body
@@ -34,15 +29,18 @@ const handle: ResponseHandler = async (res, response) => {
 	const currentPrimaryPassword = body.currentPrimaryPassword
 	const newPrimaryPassword = body.newPrimaryPassword
 
+	const loginRepository = new LoginRepository()
+	const settingsRepository = new SettingsRepository()
+
 	// Validate current primary password
 	try {
-		const hashedPrimaryPassword = await retrieveSetting(
+		const hashedPrimaryPassword = (await settingsRepository.retrieveSetting(
 			"hashedPrimaryPassword"
-		)
+		)) as string
 		if (
 			!validatePrimaryPassword(
 				body.currentPrimaryPassword,
-				hashedPrimaryPassword.value
+				hashedPrimaryPassword
 			)
 		) {
 			return response(res, 401, {
@@ -53,9 +51,10 @@ const handle: ResponseHandler = async (res, response) => {
 			})
 		}
 	} catch (error: any) {
-		reportError("Error while validating current primary password", {
-			message: error.message,
-		})
+		reportError(
+			"Error while validating current primary password",
+			error.message
+		)
 		return response(res, 500, {
 			errors: {
 				general: error?.message ?? error,
@@ -63,31 +62,42 @@ const handle: ResponseHandler = async (res, response) => {
 		})
 	}
 
-	// Retrieve and update logins
-	try {
-		await beginTransactionDB()
-		await retrieveAllAndCallbackEach((login: LoginItem) => {
-			let loginPassword = login.password
-			if (loginPassword.trim().length) {
-				loginPassword = decryptPassword(
-					currentPrimaryPassword,
-					loginPassword
-				)
-				loginPassword = encryptPassword(
-					newPrimaryPassword,
-					loginPassword
-				)
-			}
+	// Retrieve logins
+	const oldLogins = (await loginRepository.retrieveLogins<LoginItem>({
+		limit: null,
+		columns: ["website", "username", "password"],
+	})) as LoginItem[]
 
-			login.password = loginPassword
-			return updateLogin(login.id, login)
-		})
-		await commitTransaction()
+	const newLogins = oldLogins.map((login) => {
+		let loginPassword = login.password
+		if (loginPassword.trim().length) {
+			loginPassword = decryptPassword(
+				currentPrimaryPassword,
+				loginPassword
+			)
+			loginPassword = encryptPassword(newPrimaryPassword, loginPassword)
+		}
+
+		login.password = loginPassword
+		return login
+	})
+
+	try {
+		await loginRepository.deleteLogins()
 	} catch (error: any) {
-		await rollbackTransaction()
-		reportError("Error while retrieving and updating logins", {
-			message: error.message,
+		reportError("Error while deleting old logins", error.message)
+		return response(res, 400, {
+			errors: {
+				general: `Error occured while updating logins: ${error.message}`,
+			},
 		})
+	}
+
+	try {
+		await loginRepository.createLogins(newLogins)
+	} catch (error: any) {
+		await loginRepository.createLogins(oldLogins)
+		reportError("Error while creating new logins", error.message)
 		return response(res, 400, {
 			errors: {
 				general: `Error occured while updating logins: ${error.message}`,
@@ -97,18 +107,16 @@ const handle: ResponseHandler = async (res, response) => {
 
 	// Update the hashed primary password in settings table
 	try {
-		await beginTransactionDB()
-		await updateSetting(
+		await settingsRepository.updateSetting(
 			"hashedPrimaryPassword",
 			encryptPrimaryPassword(newPrimaryPassword)
 		)
-		await commitTransaction()
 		process.env.PASSWORD = newPrimaryPassword
 	} catch (error: any) {
-		await rollbackTransaction()
-		reportError("Error while updating hashed primary password", {
-			message: error.message,
-		})
+		reportError(
+			"Error while updating hashed primary password",
+			error.message
+		)
 		return response(res, 500, {
 			errors: {
 				general: `Error occured while updating primary password: ${error.message}`,

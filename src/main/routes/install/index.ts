@@ -1,7 +1,7 @@
-import { reportError, encryptPrimaryPassword } from "@utils"
+import { reportError, encryptPrimaryPassword, formatZodError } from "@utils"
 import type { ResponseHandler, InstallForm } from "@types"
 import { installFormSchema } from "@schemas"
-import { updateSetting } from "@repositories/settings"
+import { SettingsRepository } from "@repositories/settings"
 
 const handle: ResponseHandler = async (res, response) => {
 	const body: InstallForm = res.req.body
@@ -9,19 +9,14 @@ const handle: ResponseHandler = async (res, response) => {
 	try {
 		installFormSchema.parse(body)
 	} catch (error: any) {
-		const errors = error.format()
 		response(res, 422, {
-			errors: {
-				primaryPassword: errors.primaryPassword?._errors?.[0] ?? "",
-				confirmedPrimaryPassword:
-					errors.confirmedPrimaryPassword?._errors?.[0] ?? "",
-			},
+			errors: formatZodError(error.format()),
 		})
 		return
 	}
 
 	try {
-		await updateSetting(
+		await new SettingsRepository().updateSetting(
 			"hashedPrimaryPassword",
 			encryptPrimaryPassword(body.primaryPassword)
 		)

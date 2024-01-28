@@ -8,7 +8,6 @@ import {
 	Tray,
 	Menu,
 	nativeImage,
-	dialog,
 } from "electron"
 import {
 	isMac,
@@ -16,20 +15,18 @@ import {
 	reportError,
 	isDevelopment,
 	canShowCustomAppHeader,
+	debug,
 } from "@utils"
-import { initLogger, deInitLogger } from "./logger"
+import { Logger } from "./repositories/logger"
 import { initServer, deInitServer } from "./server"
-import { initDatabase, deInitDatabase } from "@database"
 import type { Settings, AppInformationType } from "@types"
-import {
-	retrieveSettings,
-	transformSettingsArrayToObject,
-} from "@repositories/settings"
+import { SettingsRepository } from "@repositories/settings"
+import { Database } from "@database"
 import packageJson from "../../package.json"
 
 let tray: Tray | null = null
-let mainWindow: BrowserWindow | null = null
 let settings: Settings | null = null
+let mainWindow: BrowserWindow | null = null
 
 const isInDevelopment = isDevelopment()
 const icon = nativeImage.createFromPath(
@@ -161,10 +158,11 @@ process.on("uncaughtException", (error) => {
 })
 
 // Emitted before the application starts closing its windows.
-app.on("before-quit", () => {
+app.on("before-quit", async () => {
 	deInitServer()
-	deInitDatabase()
-	deInitLogger()
+	debug("Server deinitialized")
+	await (await Database.getInstance()).close()
+	Logger.getInstance().deInit()
 	tray?.destroy()
 	tray = null
 })
@@ -190,21 +188,13 @@ app.on("activate", () => {
 // At this point, you can create browser windows and perform other most of the app initialization tasks.
 // This event is emitted once per application lifecycle, shortly after the app starts up.
 app.on("ready", async () => {
-	initLogger()
-
-	try {
-		await initDatabase()
-	} catch (error: any) {
-		reportError("Error while initializing database", { error: error })
-		dialog.showErrorBox("Initialization Error", error.message)
-	}
-
+	Logger.getInstance()
+	await Database.getInstance()
 	initServer()
 
 	try {
-		settings = transformSettingsArrayToObject(
-			await retrieveSettings()
-		) as Settings
+		settings =
+			(await new SettingsRepository().retrieveSettings()) as Settings
 	} catch (error) {
 		reportError("Error while retrieving settings", { error: error })
 	}

@@ -1,140 +1,193 @@
 import { reportError } from "@utils"
-import {
-	type valueTypeValues,
-	runQuery,
-	exportToDatabaseValue,
-	exportFromDatabaseValue,
-	getDatabaseInstanceOrFail,
-} from "@database"
+import type { ValueTypes } from "@types"
+import { BaseRepository } from "./base"
 
-type TransformedSetting = { [key: string]: any }
+type TransformedSetting = { [key: string]: ValueTypes }
 type DatabaseSetting = {
 	id?: number
 	name: string
 	value?: string
 	defaultValue: string
-	type: valueTypeValues
+	type: "string" | "number" | "boolean" | "json"
+}
+type DefaultSetting = {
+	name: DatabaseSetting["name"]
+	defaultValue: DatabaseSetting["defaultValue"]
+	type: DatabaseSetting["type"]
 }
 
-const defaultSettings: DatabaseSetting[] = [
-	{
-		name: "startOnLogin",
-		defaultValue: "true",
-		type: "boolean",
-	},
-	{
-		name: "startMinimized",
-		defaultValue: "false",
-		type: "boolean",
-	},
-	{
-		name: "hashedPrimaryPassword",
-		defaultValue: "",
-		type: "string",
-	},
-]
+export class SettingsRepository extends BaseRepository {
+	private _DEFAULT_SETTINGS: DefaultSetting[] = [
+		{
+			name: "startOnLogin",
+			defaultValue: "true",
+			type: "boolean",
+		},
+		{
+			name: "startMinimized",
+			defaultValue: "false",
+			type: "boolean",
+		},
+		{
+			name: "hashedPrimaryPassword",
+			defaultValue: "",
+			type: "string",
+		},
+	]
 
-export const transformSettingArrayToObject = (
-	setting: DatabaseSetting
-): TransformedSetting => {
-	return {
-		[setting.name]: exportFromDatabaseValue(
-			setting.value ?? setting.defaultValue,
-			setting.type
-		),
+	constructor() {
+		super("settings")
 	}
-}
 
-export const transformSettingsArrayToObject = (settings: DatabaseSetting[]) => {
-	let settingsObject: TransformedSetting = {}
-
-	settings.forEach((setting: DatabaseSetting) => {
-		settingsObject = {
-			...settingsObject,
-			...transformSettingArrayToObject(setting),
+	private _exportFromDatabaseValue(
+		value: string,
+		type: DatabaseSetting["type"]
+	) {
+		switch (type) {
+			case "string":
+				return String(value)
+			case "number":
+				return Number(value)
+			case "boolean": {
+				const lowerCaseValue = value.toLowerCase()
+				return lowerCaseValue === "true" || lowerCaseValue === "1"
+			}
+			case "json":
+				try {
+					return JSON.parse(value)
+				} catch (error: any) {
+					reportError("Error parsing JSON", {
+						message: error.message,
+						context: {
+							value,
+							type,
+						},
+					})
+					return null
+				}
 		}
-	})
+	}
 
-	return settingsObject
-}
+	private _exportToDatabaseValue(
+		value: ValueTypes,
+		type: DatabaseSetting["type"]
+	) {
+		switch (type) {
+			case "string":
+			case "number":
+			case "boolean":
+				return String(value)
+			case "json":
+				return JSON.stringify(value)
+		}
+	}
 
-export function retrieveSetting(name: string): Promise<DatabaseSetting> {
-	return new Promise((resolve, reject) => {
-		const db = getDatabaseInstanceOrFail()
-		db?.get(
-			"SELECT * FROM `settings` WHERE `name` = ?",
-			[name],
-			(error: Error | null, row: DatabaseSetting | undefined) => {
-				if (error) {
-					reportError("Error getting retrieving setting", {
+	private _transformSettingArrayToObject(setting: DatabaseSetting) {
+		return {
+			[setting.name]: this._exportFromDatabaseValue(
+				setting.value ?? setting.defaultValue,
+				setting.type
+			),
+		} as TransformedSetting
+	}
+
+	private _transformSettingsArrayToObject(settings: DatabaseSetting[]) {
+		let settingsObject: TransformedSetting = {}
+
+		settings.forEach((setting: DatabaseSetting) => {
+			settingsObject = {
+				...settingsObject,
+				...this._transformSettingArrayToObject(setting),
+			} as TransformedSetting
+		})
+
+		return settingsObject
+	}
+
+	private async _retrieveSetting(name: DatabaseSetting["name"]) {
+		return this.where("name", name)
+			.get<DatabaseSetting | undefined>()
+			.then((setting) => {
+				setting = {
+					...this._DEFAULT_SETTINGS.find(
+						(setting) => setting.name === name
+					),
+					...{ ...(setting ?? {}) },
+				} as DatabaseSetting
+				return setting
+			})
+			.catch((error) => {
+				reportError("Error while retrieving setting", {
+					message: error.message,
+				})
+				throw error
+			})
+	}
+
+	public async retrieveSetting(name: DatabaseSetting["name"]) {
+		return this._retrieveSetting(name)
+			.then((setting) => {
+				return this._transformSettingArrayToObject(setting)[name]
+			})
+			.catch((error) => {
+				reportError("Error while retrieving setting", {
+					message: error.message,
+				})
+				throw error
+			})
+	}
+
+	public async retrieveSettings() {
+		return await this.all<DatabaseSetting>()
+			.then((settings) => {
+				return this._transformSettingsArrayToObject([
+					...this._DEFAULT_SETTINGS.map((setting) => {
+						return {
+							...setting,
+							...settings.find((s) => s.name === setting.name),
+						}
+					}),
+					...settings,
+				])
+			})
+			.catch((error) => {
+				reportError("Error while retrieving settings", {
+					message: error.message,
+				})
+				throw error
+			})
+	}
+
+	public async updateSetting(
+		name: DatabaseSetting["name"],
+		newValue: ValueTypes
+	) {
+		const setting = await this._retrieveSetting(name)
+
+		return new Promise((resolve, reject) => {
+			this.columns(["name", "value", "defaultValue", "type"])
+				.insertOrReplace([
+					[
+						name,
+						this._exportToDatabaseValue(
+							newValue ?? setting.defaultValue,
+							setting.type
+						),
+						setting.defaultValue,
+						setting.type,
+					],
+				])
+				.then((data) => resolve(Boolean(data)))
+				.catch((error: Error) => {
+					reportError("Error updating application setting", {
 						message: error.message,
 						context: {
 							name,
+							newValue,
 						},
 					})
 					reject(error)
-				} else {
-					const settingDefaultInformation = {
-						...defaultSettings.find(
-							(setting) => setting.name === name
-						),
-						...{ ...(row ?? {}) },
-					} as DatabaseSetting
-
-					resolve(settingDefaultInformation)
-				}
-			}
-		)
-	})
-}
-
-export function retrieveSettings(): Promise<DatabaseSetting[]> {
-	const db = getDatabaseInstanceOrFail()
-
-	return new Promise((resolve, reject) => {
-		db?.all(
-			`SELECT * FROM settings`,
-			[],
-			(error, rows: DatabaseSetting[]) => {
-				if (error) {
-					reportError("Error getting retrieving settings", {
-						message: error.message,
-					})
-					reject(error)
-				} else {
-					resolve([...defaultSettings, ...rows])
-				}
-			}
-		)
-	})
-}
-
-export async function updateSetting(name: string, newValue: any) {
-	const setting = await retrieveSetting(name)
-
-	return new Promise((resolve, reject) => {
-		runQuery(
-			"INSERT OR REPLACE INTO `settings` (`name`, `value`, `defaultValue`, `type`) VALUES (?, ?, ?, ?)",
-			[
-				name,
-				exportToDatabaseValue(
-					newValue ?? setting.defaultValue,
-					setting.type
-				),
-				setting.defaultValue,
-				setting.type,
-			]
-		)
-			.then(() => resolve(null))
-			.catch((error: Error) => {
-				reportError("Error updating application setting", {
-					message: error.message,
-					context: {
-						name,
-						newValue,
-					},
 				})
-				reject(error)
-			})
-	})
+		})
+	}
 }

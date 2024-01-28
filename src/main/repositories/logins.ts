@@ -1,194 +1,165 @@
-import { reportError, encryptPassword } from "@utils"
-import { runQuery, getDatabaseInstanceOrFail } from "@database"
-import type { LoginItem, LoginList, CreateEditFormData } from "@types"
+import { reportError } from "@utils"
+import type { Sort, DatabaseQuery, LoginItem, CreateEditFormData } from "@types"
+import { BaseRepository } from "./base"
 
-const LoginListPaginationLimit = 7
+export class LoginRepository extends BaseRepository {
+	private _LOGIN_LIST_PAGINATION_LIMIT = 7
 
-export function countLogins(): Promise<number> {
-	return new Promise((resolve, reject) => {
-		const db = getDatabaseInstanceOrFail()
+	constructor() {
+		super("logins")
+	}
 
-		db?.get(
-			"SELECT COUNT(*) AS `logins_number` FROM `logins`",
-			[],
-			(error, row: number) => {
-				if (error) {
-					reportError("Error while retrieving number of logins", {
-						message: error.message,
-					})
-					reject(error)
-				} else {
-					resolve(row.logins_number)
-				}
-			}
-		)
-	})
-}
+	public async countLogins() {
+		return this.columns(["COUNT(*) AS `logins_number`"])
+			.get<{ logins_number: number }>()
+			.then(({ logins_number }) => logins_number)
+			.catch((error) => {
+				reportError("Error while retrieving number of logins", {
+					message: error.message,
+				})
+				throw error
+			})
+	}
 
-export const hasMore = (count: number, page: number): boolean => {
-	return count > page * LoginListPaginationLimit
-}
+	public async retrieveLogins<T>({
+		search = "",
+		page = 0,
+		sort = "DESC",
+		limit = this._LOGIN_LIST_PAGINATION_LIMIT,
+		columns = ["id", "website", "username"],
+	}: {
+		search?: string
+		page?: number
+		sort?: Sort["direction"]
+		limit?: DatabaseQuery["limit"]
+		columns?: DatabaseQuery["columns"]
+	}) {
+		const params: string[] = []
+		let query = this.columns(columns)
+			.sort("id", sort)
+			.limit(limit)
+			.offset((page - 1) * (limit || 0))
 
-export function retrieveLogins(
-	searchText: string = "",
-	page: number = 0,
-	sort: "asc" | "desc" = "desc"
-) {
-	return new Promise((resolve, reject) => {
-		const db = getDatabaseInstanceOrFail()
-		let query = "SELECT `id`, `website`, `username` FROM `logins`"
-		const params = []
-
-		if (searchText.trim().length) {
-			searchText = searchText.replace(/_/g, "\\_").replace(/%/g, "\\%")
-			searchText = `%${searchText}%`
-			query += " WHERE `website` LIKE ? OR `username` LIKE ? ESCAPE '\\'"
-			params.push(searchText, searchText)
+		if (search.trim().length) {
+			query = query
+				.whereLike("website", search)
+				.orWhereLike("username", search)
+			params.push(search, search)
 		}
 
-		query += ` ORDER BY \`id\` ${sort === "desc" ? "DESC" : "ASC"}`
-
-		if (page >= 0 && !isNaN(Number(page))) {
-			query += ` LIMIT ${LoginListPaginationLimit} OFFSET ${
-				Number(page) * LoginListPaginationLimit
-			}`
-		}
-
-		db?.all(query, params, (error, rows: LoginList[]) => {
-			if (error) {
+		return await query
+			.all<T>()
+			.then((logins) => logins)
+			.catch((error) => {
 				reportError("Error while retrieving logins", {
 					message: error.message,
 					query,
 					params,
-					searchText,
+					search,
+					page,
+					sort,
 				})
-				reject(error)
-			} else {
-				resolve(rows)
-			}
+				throw error
+			})
+	}
+
+	public async retrieveLogin(loginId: number) {
+		return await this.columns(["id", "website", "username", "password"])
+			.where("id", loginId)
+			.get<LoginItem>()
+			.then((login) => login)
+			.catch((error) => {
+				reportError(`Error while retrieving login ${loginId}`, {
+					message: error.message,
+					loginId,
+				})
+				throw error
+			})
+	}
+
+	public hasMore(count: number, page: number) {
+		return count > page * this._LOGIN_LIST_PAGINATION_LIMIT
+	}
+
+	public async updateLogin(loginId: number, data: CreateEditFormData) {
+		return this.withTransaction(async () => {
+			await this.columns(["website", "username", "password"])
+				.where("id", loginId)
+				.update(Object.values(data))
+				.then((isUpdated) => Boolean(isUpdated))
+				.catch((error: Error) => {
+					reportError("Error updating login details", {
+						message: error.message,
+						context: {
+							loginId,
+							data,
+						},
+					})
+					throw error
+				})
 		})
-	})
-}
+	}
 
-export function retrieveLogin(loginId: number) {
-	return new Promise((resolve, reject) => {
-		const db = getDatabaseInstanceOrFail()
+	public async deleteLogin(loginId: number) {
+		return this.withTransaction(async () => {
+			return await this.where("id", loginId)
+				.delete()
+				.catch((error: Error) => {
+					reportError("Error deleting login", {
+						message: error.message,
+						context: {
+							loginId,
+						},
+					})
+					throw error
+				})
+		})
+	}
 
-		db?.get(
-			"SELECT * FROM `logins` WHERE `id` = ?",
-			[loginId],
-			(error, row: LoginItem) => {
-				if (error) {
-					reportError(`Error while retrieving login ${loginId}`, {
+	public async createLogin(data: CreateEditFormData) {
+		return this.withTransaction(async () => {
+			await this.columns(["website", "username", "password"])
+				.insert(Object.values(data))
+				.then((isInserted) => Boolean(isInserted))
+				.catch((error: Error) => {
+					reportError("Error creating new login", {
+						message: error.message,
+						context: {
+							data,
+						},
+					})
+					throw error
+				})
+		})
+	}
+
+	public async createLogins(logins: LoginItem[]) {
+		return await this.withTransaction(async () => {
+			return await this.columns(["website", "username", "password"])
+				.insert(logins.map((login) => Object.values(login)))
+				.then((isInserted) => Boolean(isInserted))
+				.catch((error: Error) => {
+					reportError("Error creating new logins", {
+						message: error.message,
+						context: {
+							logins,
+						},
+					})
+					throw error
+				})
+		})
+	}
+
+	public async deleteLogins() {
+		return this.withTransaction(async () => {
+			await this.delete()
+				.then((isDeleted) => Boolean(isDeleted))
+				.catch((error: Error) => {
+					reportError("Error deleting logins", {
 						message: error.message,
 					})
-					reject(error)
-				} else {
-					resolve(row)
-				}
-			}
-		)
-	})
-}
-
-export function createLogin(data: CreateEditFormData) {
-	return new Promise((resolve, reject) => {
-		let password = data.password
-
-		if (password.trim().length) {
-			password = encryptPassword(process.env.PASSWORD, password)
-		}
-
-		runQuery(
-			"INSERT INTO `logins` (`website`, `username`, `password`) VALUES (?, ?, ?)",
-			[data.website, data.username, password]
-		)
-			.then(() => resolve(null))
-			.catch((error: Error) => {
-				reportError("Error creating new login", {
-					message: error.message,
-					context: {
-						data,
-					},
+					throw error
 				})
-				reject(error)
-			})
-	})
-}
-
-export function updateLogin(loginId: number, data: CreateEditFormData) {
-	return new Promise((resolve, reject) => {
-		runQuery(
-			"UPDATE `logins` SET `website` = ?, `username` = ?, `password` = ? WHERE `id` = ?",
-			[data.website, data.username, data.password, loginId]
-		)
-			.then((result) => resolve(!!result.changes))
-			.catch((error: Error) => {
-				reportError("Error updating login details", {
-					message: error.message,
-					context: {
-						loginId,
-						data,
-					},
-				})
-				reject(error)
-			})
-	})
-}
-
-export function retrieveAllAndCallbackEach(callback: any) {
-	return new Promise((resolve, reject) => {
-		const db = getDatabaseInstanceOrFail()
-
-		db?.each(
-			"SELECT * FROM `logins`",
-			[],
-			async (error, row: LoginItem) => {
-				if (error) {
-					reportError(
-						"Error while retrieving logins and updating with callback",
-						{
-							message: error.message,
-						}
-					)
-					reject(error)
-				} else {
-					try {
-						await callback(row)
-					} catch (error: any) {
-						reject(error)
-					}
-				}
-			},
-			(error) => {
-				if (error) {
-					reportError(
-						"Error after finished retrieving logins and updating with callback",
-						{
-							message: error.message,
-						}
-					)
-					reject(error)
-				} else {
-					resolve()
-				}
-			}
-		)
-	})
-}
-
-export async function deleteLogin(loginId: number) {
-	return new Promise((resolve, reject) => {
-		runQuery("DELETE FROM `logins` WHERE `id` = ?", [loginId])
-			.then((result) => resolve(!!result.changes))
-			.catch((error: Error) => {
-				reportError("Error deleting login", {
-					message: error.message,
-					context: {
-						loginId,
-					},
-				})
-				reject(error)
-			})
-	})
+		})
+	}
 }

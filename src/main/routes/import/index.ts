@@ -5,14 +5,14 @@ import type {
 	ImportFileDataType,
 	LoginItem,
 } from "@types"
-import { reportError, formatZodError, decryptPassword } from "@utils"
-import { importFileSchema } from "@schemas"
 import {
-	beginTransactionDB,
-	commitTransaction,
-	rollbackTransaction,
-} from "@database"
-import { createLogin } from "@repositories/logins"
+	reportError,
+	formatZodError,
+	decryptPassword,
+	encryptPassword,
+} from "@utils"
+import { importFileSchema } from "@schemas"
+import { LoginRepository } from "@repositories/logins"
 
 interface ImportOptionsCSV {
 	delimiter: string
@@ -114,7 +114,7 @@ const importFromJSON = (
 			return undefined
 		}
 
-		content = content.logins?.map((login: any) => ({
+		content = content?.logins?.map?.((login: any) => ({
 			website: login.website ?? "",
 			username: login.username ?? "",
 			password: !login.password
@@ -122,7 +122,7 @@ const importFromJSON = (
 				: decryptPassword(options.oldJSONPassword, login.password),
 		}))
 	} else {
-		content = content.map((login: any) => ({
+		content = content?.map?.((login: any) => ({
 			website: login[columns.website] ?? "",
 			username: login[columns.username] ?? "",
 			password: login[columns.password] ?? "",
@@ -182,19 +182,18 @@ const handle: ResponseHandler = async (res, response) => {
 			fileContent,
 		})
 	}
-
 	if (!logins) return
 
-	await beginTransactionDB()
-	try {
-		for await (const login of logins) {
-			await createLogin(login)
-		}
+	logins = logins.map((login) => {
+		login.password = encryptPassword(process.env.PASSWORD, login.password)
+		return login
+	})
 
-		await commitTransaction()
+	try {
+		const loginRepository = new LoginRepository()
+		await loginRepository.createLogins(logins)
 		response(res, 201, {})
 	} catch (error: any) {
-		await rollbackTransaction()
 		reportError("Importing logins", {
 			error: error.message,
 		})

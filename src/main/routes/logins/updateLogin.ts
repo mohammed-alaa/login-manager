@@ -1,11 +1,6 @@
-import type { CreateEditFormData } from "@types"
+import type { CreateEditFormData, ResponseHandler } from "@types"
 import { reportError, encryptPassword } from "@utils"
-import {
-	beginTransactionDB,
-	commitTransaction,
-	rollbackTransaction,
-} from "@database"
-import { updateLogin } from "@repositories/logins"
+import { LoginRepository } from "@repositories/logins"
 
 const loginNotFound: ResponseHandler = (res, response) => {
 	response(res, 404, { message: "Invalid login ID" })
@@ -13,7 +8,7 @@ const loginNotFound: ResponseHandler = (res, response) => {
 
 const handle: ResponseHandler = async (res, response) => {
 	const body: CreateEditFormData = res.req.body
-	const loginId = res.req.query.get("loginId")
+	const loginId: number = parseInt(res.req.query?.get("loginId") || "0")
 
 	if (!loginId) {
 		return loginNotFound(res, response)
@@ -24,12 +19,9 @@ const handle: ResponseHandler = async (res, response) => {
 	}
 
 	try {
-		await beginTransactionDB()
-		const updated = await updateLogin(loginId, body)
-		await commitTransaction()
+		const updated = await new LoginRepository().updateLogin(loginId, body)
 		return updated ? response(res, 204, {}) : loginNotFound(res, response)
 	} catch (error: any) {
-		await rollbackTransaction()
 		reportError("Error while update login", {
 			message: error.message,
 		})

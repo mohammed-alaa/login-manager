@@ -1,22 +1,18 @@
-import type { CreateEditFormData } from "@types"
-import { reportError } from "@utils"
-import {
-	beginTransactionDB,
-	commitTransaction,
-	rollbackTransaction,
-} from "@database"
-import { createLogin } from "@repositories/logins"
+import type { CreateEditFormData, ResponseHandler } from "@types"
+import { reportError, encryptPassword } from "@utils"
+import { LoginRepository } from "@repositories/logins"
 
 const handle: ResponseHandler = async (res, response) => {
 	const body: CreateEditFormData = res.req.body
 
+	if (body.password.trim().length) {
+		body.password = encryptPassword(process.env.PASSWORD, body.password)
+	}
+
 	try {
-		await beginTransactionDB()
-		await createLogin(body)
-		await commitTransaction()
+		await new LoginRepository().createLogin(body)
 		response(res, 201, {})
 	} catch (error: any) {
-		await rollbackTransaction()
 		reportError("Error while creating new login", {
 			message: error.message,
 		})

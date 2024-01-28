@@ -2,7 +2,8 @@ import { app } from "electron"
 import { resolve } from "path"
 import { encrypt, decrypt } from "aes256"
 import { compareSync, hashSync, genSaltSync } from "bcrypt"
-import { getLogger } from "./logger"
+import { Logger } from "@repositories/logger"
+import type { ZodError } from "zod"
 
 export const encryptPrimaryPassword = (primaryPassword: string) => {
 	return hashSync(primaryPassword, genSaltSync(10))
@@ -53,7 +54,7 @@ export const reportError = (message: string, context: object = {}) => {
 	if (isDevelopment()) {
 		console.error(message, context)
 	} else {
-		getLogger()?.error(message, context)
+		Logger.getInstance().getLogger()?.error(message, context)
 	}
 }
 
@@ -67,15 +68,15 @@ export const debug = <T>(
 
 	if (context) {
 		console.log(message, context)
-		getLogger()?.info(message, context)
+		Logger.getInstance().getLogger()?.info(message, context)
 	} else {
 		console.log(message)
-		getLogger()?.info(message)
+		Logger.getInstance().getLogger()?.info(message)
 	}
 }
 
-export const formatZodError = (errors) => {
-	const formatedErrors = {}
+export const formatZodError = (errors: ZodError) => {
+	const formatedErrors: { [key: string]: string } = {}
 	Object.entries(errors).forEach(([key, value]) => {
 		// "_errors" is coming fom zod, so ignoring it
 		if (key !== "_errors") {
