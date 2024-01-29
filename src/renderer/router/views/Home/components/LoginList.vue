@@ -1,16 +1,27 @@
 <script setup lang="ts">
-import { computed } from "vue"
-import type { LoginList } from "@types"
+import { computed, onMounted, onUnmounted } from "vue"
+import constants from "@/constants"
+import type { LoginList, WindowType } from "@types"
 import store from "@store"
 import AppIcon from "@components/AppIcon"
 import Tooltip from "@components/Tooltip"
 import AppButton from "@components/AppButton"
 import LoginItem from "./LoginItem.vue"
 
+const appHeaderHeight = (
+	window as WindowType
+).navigator.windowControlsOverlay.getTitlebarAreaRect().height
+const {
+	loginListItem: loginListItemHeight,
+	loginListToolbar: loginListToolbarHeight,
+	loginListInfinitScroll,
+} = constants.height
+
 const logins = computed<LoginList>(() => store.getters.getLoginList)
 const getLoginListSort = computed(() => store.getters.getLoginListSort)
 const isLoginListHasMore = computed(() => store.getters.isLoginListHasMore)
 const isLoginListLoading = computed(() => store.getters.isLoginListLoading)
+const getLoginsLimit = computed(() => store.getters.getLoginsLimit)
 const loginsNumber = computed(() => store.getters.loginsNumber)
 const getActiveLoginId = computed({
 	get: () => store.getters.getActiveLoginId,
@@ -30,22 +41,47 @@ const loginListScroll = (e: Event) => {
 
 	if (
 		Math.ceil(target.scrollTop + target.clientHeight) >
-		target.scrollHeight - 20
+		target.scrollHeight - loginListInfinitScroll
 	) {
 		store.retrieveLogins()
 	}
 }
+
+const onWindowResize = () => {
+	const loginListHeight =
+		window.innerHeight -
+		loginListItemHeight -
+		appHeaderHeight -
+		loginListToolbarHeight
+	const loginListItemsNumber = Math.floor(
+		loginListHeight / loginListItemHeight
+	)
+
+	if (getLoginsLimit.value < loginListItemsNumber) {
+		store.setLoginsLimit(loginListItemsNumber)
+		store.retrieveLogins()
+	}
+}
+
+onMounted(() => {
+	onWindowResize()
+	window.addEventListener("resize", onWindowResize)
+})
+
+onUnmounted(() => {
+	window.removeEventListener("resize", onWindowResize)
+})
 </script>
 
 <template>
 	<div
-		class="login-list border-e border-main overflow-y-auto"
+		class="login-list border-e border-main overflow-hidden gap-2"
 		:class="{
 			'flex flex-col': loginsNumber,
 		}"
 	>
 		<div
-			class="sticky top-0 z-10 py-2 px-4 bg-main shadow-md shadow-black/40 flex items-center justify-between"
+			class="min-h-login-list-toolbar sticky top-0 z-10 px-4 bg-main shadow-md shadow-black/40 flex items-center justify-between"
 		>
 			<p class="text-gray">{{ loginsNumber }} logins</p>
 			<Tooltip id="login-list-sort">
@@ -66,7 +102,7 @@ const loginListScroll = (e: Event) => {
 		<transition-group name="swap">
 			<template v-if="logins.length">
 				<div
-					class="py-2 px-4 flex flex-col gap-2 overflow-y-auto"
+					class="px-4 flex flex-col gap-2 overflow-y-auto"
 					@scroll="loginListScroll"
 				>
 					<template v-for="login in logins" :key="login.id">

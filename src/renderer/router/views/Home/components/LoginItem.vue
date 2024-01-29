@@ -8,7 +8,7 @@ defineEmits(["click"])
 
 type LoginItemProps = {
 	login: LoginItem | null
-	isActive?: boolean
+	isActive: boolean
 }
 
 const props = withDefaults(defineProps<LoginItemProps>(), {
@@ -16,14 +16,14 @@ const props = withDefaults(defineProps<LoginItemProps>(), {
 })
 
 const getWebsiteAddressName = computed(
-	() => getWebsiteName(props.login.website) || "<no website>"
+	() => getWebsiteName(props.login?.website) || "<no website>"
 )
-const getUsername = computed(() => props.login.username || "<no username>")
+const getUsername = computed(() => props.login?.username || "<no username>")
 </script>
 
 <template>
 	<div
-		class="login-item px-4 py-2 rounded-lg transition ease-in-out border"
+		class="min-h-login-list-item px-4 py-2 rounded-lg transition ease-in-out border"
 		:class="`${
 			isActive
 				? 'cursor-default active text-white border-focus bg-focus'

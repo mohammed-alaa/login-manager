@@ -29,6 +29,7 @@ const state = reactive({
 			count: 0,
 			sort: "desc",
 			hasMore: false,
+			limit: 6,
 		},
 	},
 	activeLoginId: -1,
@@ -61,6 +62,7 @@ const getters = {
 	}),
 	getSearchText: computed(() => state.searchText),
 	getAppInformation: computed(() => state.appInformation),
+	getLoginsLimit: computed(() => state.logins.pagination.limit),
 }
 
 const store = reactive({
@@ -147,6 +149,7 @@ const store = reactive({
 					search: this.getters.getSearchText,
 					page: this.getters.getLoginListPage,
 					sort: this.getters.getLoginListSort,
+					limit: this.getters.getLoginsLimit,
 				}),
 				"get"
 			)
@@ -213,6 +216,10 @@ const store = reactive({
 			this.state.logins.pagination.sort === "asc" ? "desc" : "asc"
 		this.resetLoginsPaginationData()
 		return this.retrieveLogins()
+	},
+	setLoginsLimit: function (limit: number) {
+		this.state.logins.pagination.limit = limit
+		this.resetLoginsPaginationData()
 	},
 	resetActiveLoginId: function () {
 		this.state.activeLoginId = -1

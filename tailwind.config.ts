@@ -1,3 +1,12 @@
+import constants from "./src/renderer/constants"
+
+const height = {
+	"settings-header-height": "3.5rem",
+	"search-bar": `${constants.height.searchBar}px`,
+	"login-list-item": `${constants.height.loginListItem}px`,
+	"login-list-toolbar": `${constants.height.loginListToolbar}px`,
+}
+
 /** @type {import('tailwindcss').Config} */
 export default {
 	content: {
@@ -85,15 +94,13 @@ export default {
 			ringColor: {
 				"switch-focus": "#a478ff",
 			},
-			height: {
-				topbar: "3rem",
-				"login-list": "300px",
-				"settings-header-height": "3.5rem",
-			},
+			height,
+			minHeight: height,
+			maxHeight: height,
 			width: {
 				50: "50%",
 				80: "80%",
-				"login-list": "4.5rem",
+				"login-list": "300px",
 			},
 			maxWidth: {
 				50: "50%",

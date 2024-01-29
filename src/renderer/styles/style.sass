@@ -17,11 +17,12 @@
 	button
 		-webkit-app-region: no-drag
 	ol, ul
-		padding-inline-start: 1.5rem
+		@apply ps-4
+		@apply list-inside
 	ol
-		list-style-type: decimal
+		@apply list-decimal
 	ul
-		list-style-type: disc
+		@apply list-disc
 
 html
 	@apply overflow-hidden
@@ -37,8 +38,8 @@ body
 	@apply bg-main
 
 .login-view
-	grid-template-rows: theme('width.login-list') auto
-	grid-template-columns: theme('height.login-list') auto
+	grid-template-rows: theme('height.search-bar') auto
+	grid-template-columns: theme('width.login-list') auto
 	grid-template-areas: "search info" "list body"
 
 	.search
