@@ -12,7 +12,7 @@ const goHome = () => router.push({ name: "home" })
 <template>
 	<section class="settings max-w-80 mx-auto">
 		<div
-			class="settings-header px-4 flex items-center gap-2 sticky top-safe-area z-10 bg-secondary border-x border-b border-main"
+			class="settings-header px-4 flex items-center gap-2 sticky top-0 z-10 bg-secondary border-x border-b border-main"
 		>
 			<Tooltip id="go-back-title">
 				<AppButton variant="text" color="secondary" @click="goHome">
@@ -28,7 +28,7 @@ const goHome = () => router.push({ name: "home" })
 			</h2>
 		</div>
 		<div
-			class="settings-body h-full p-4 flex flex-col gap-4 bg-main border border-t-0 border-main overflow-y-auto"
+			class="settings-body p-4 flex flex-col gap-4 bg-main border border-t-0 border-main overflow-y-auto"
 		>
 			<slot name="content" />
 		</div>

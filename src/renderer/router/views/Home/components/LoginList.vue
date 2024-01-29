@@ -22,7 +22,9 @@ const retrieveLogin = (loginId: number) => (getActiveLoginId.value = loginId)
 const updateLoginsSortOrder = () => store.updateLoginsSortOrder()
 
 const loginListScroll = (e: Event) => {
-	if (isLoginListLoading.value || !isLoginListHasMore.value) return
+	if (isLoginListLoading.value || !isLoginListHasMore.value) {
+		return
+	}
 
 	const target = e.target as HTMLDivElement
 
@@ -37,7 +39,7 @@ const loginListScroll = (e: Event) => {
 
 <template>
 	<div
-		class="login-list border-e border-main overflow-hiddena"
+		class="login-list border-e border-main overflow-y-auto"
 		:class="{
 			'flex flex-col': loginsNumber,
 		}"
@@ -61,29 +63,31 @@ const loginListScroll = (e: Event) => {
 				</template>
 			</Tooltip>
 		</div>
-		<!-- <transition-group name="swap"> -->
-		<template v-if="isLoginListLoading">
-			<div class="h-full flex items-center justify-center text-white">
-				<AppIcon icon="refresh" class="animate-spin" />
-			</div>
-		</template>
-		<template v-else-if="logins.length">
-			<div
-				class="py-2 px-4 flex flex-col gap-2 overflow-y-auto"
-				@scroll.prevent="loginListScroll"
-			>
-				<template v-for="login in logins" :key="login.id">
-					<LoginItem
-						:is-active="isLoginActive(login.id)"
-						:login="login"
-						@click="retrieveLogin(login.id)"
-					/>
-				</template>
-			</div>
-		</template>
-		<template v-else>
-			<h3 class="text-white py-8 text-center">No logins found.</h3>
-		</template>
-		<!-- </transition-group> -->
+		<transition-group name="swap">
+			<template v-if="logins.length">
+				<div
+					class="py-2 px-4 flex flex-col gap-2 overflow-y-auto"
+					@scroll="loginListScroll"
+				>
+					<template v-for="login in logins" :key="login.id">
+						<LoginItem
+							:is-active="isLoginActive(login.id)"
+							:login="login"
+							@click="retrieveLogin(login.id)"
+						/>
+					</template>
+				</div>
+
+				<div
+					v-show="isLoginListLoading"
+					class="flex items-center justify-center text-white py-2"
+				>
+					<AppIcon icon="refresh" class="animate-spin" />
+				</div>
+			</template>
+			<template v-else>
+				<h3 class="text-white py-8 text-center">No logins found.</h3>
+			</template>
+		</transition-group>
 	</div>
 </template>
