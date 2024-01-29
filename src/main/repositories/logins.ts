@@ -1,5 +1,5 @@
 import { reportError } from "@utils"
-import type { Sort, DatabaseQuery, LoginItem, CreateEditFormData } from "@types"
+import type { LoginItem, CreateEditFormData } from "@types"
 import { BaseRepository } from "./base"
 
 export class LoginRepository extends BaseRepository {
@@ -21,44 +21,11 @@ export class LoginRepository extends BaseRepository {
 			})
 	}
 
-	public async retrieveLogins<T>({
-		search = "",
-		page = 0,
-		sort = "DESC",
-		limit = this._LOGIN_LIST_PAGINATION_LIMIT,
-		columns = ["id", "website", "username"],
-	}: {
-		search?: string
-		page?: number
-		sort?: Sort["direction"]
-		limit?: DatabaseQuery["limit"]
-		columns?: DatabaseQuery["columns"]
-	}) {
-		const params: string[] = []
-		let query = this.columns(columns)
-			.sort("id", sort)
-			.limit(limit)
-			.offset((page - 1) * (limit || 0))
-
-		if (search.trim().length) {
-			query = query
-				.whereLike("website", search)
-				.orWhereLike("username", search)
-			params.push(search, search)
-		}
-
-		return await query
-			.all<T>()
+	public async retrieveLogins<T>() {
+		return await this.all<T>()
 			.then((logins) => logins)
 			.catch((error) => {
-				reportError("Error while retrieving logins", {
-					message: error.message,
-					query,
-					params,
-					search,
-					page,
-					sort,
-				})
+				reportError("Error while retrieving logins", error.message)
 				throw error
 			})
 	}

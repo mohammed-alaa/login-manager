@@ -13,13 +13,10 @@ export class Database extends AbstractDatabase {
 		return this._instance
 	}
 
-	public async all<T>(
-		query: string,
-		params: SelectQueryValues
-	): Promise<T[]> {
+	public async all<T>(query: string, params: SelectQueryValues): Promise<T> {
 		return new Promise((resolve, reject) => {
 			this._dbInstance?.all<T>(query, params, (error, rows) => {
-				error ? reject(error) : resolve(rows)
+				error ? reject(error) : resolve(rows as T)
 			})
 		})
 	}
@@ -27,7 +24,7 @@ export class Database extends AbstractDatabase {
 	public async get<T>(query: string, params: SelectQueryValues): Promise<T> {
 		return new Promise((resolve, reject) => {
 			this._dbInstance?.get<T>(query, params, (error, row) => {
-				error ? reject(error) : resolve(row)
+				error ? reject(error) : resolve(row as T)
 			})
 		})
 	}

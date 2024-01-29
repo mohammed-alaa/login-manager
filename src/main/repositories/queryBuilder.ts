@@ -204,6 +204,10 @@ export class QueryBuilder extends Database {
 		return this
 	}
 
+	public page(page: DatabaseQuery["offset"], limit: DatabaseQuery["limit"]) {
+		return this.offset(((page as number) - 1) * (limit || 0)).limit(limit)
+	}
+
 	public async beginTransaction() {
 		return (await this._getInstance()).runQuery<any>(
 			"BEGIN TRANSACTION;",

@@ -1,21 +1,29 @@
-import { type ResponseHandler } from "@types"
+import type { ResponseHandler, Sort, LoginList } from "@types"
 import { reportError } from "@utils"
 import { LoginRepository } from "@repositories/logins"
-import type { Sort } from "@repositories/queryCompiler"
 
 const handle: ResponseHandler = async (res, response) => {
 	const page = parseInt(res.req.query?.get("page") || "0")
+	const limit = parseInt(res.req.query?.get("limit") || "0")
 	const search = res.req.query?.get("search") || ""
-	const sort = res.req.query?.get("sort") || "desc"
+	const sort: Sort["direction"] = (res.req.query?.get("sort") ||
+		"desc") as Sort["direction"]
 
 	try {
 		const loginRepository = new LoginRepository()
 		const count = await loginRepository.countLogins()
-		const logins = await loginRepository.retrieveLogins({
-			search,
-			page,
-			sort: sort as Sort["direction"],
-		})
+		let loginsQuery = loginRepository
+			.columns(["id", "username", "website"])
+			.sort("id", sort)
+			.page(page, limit)
+
+		if (search.trim().length) {
+			loginsQuery = loginsQuery
+				.whereLike("website", search)
+				.orWhereLike("username", search)
+		}
+
+		const logins = await loginsQuery.retrieveLogins<LoginList>()
 		response(res, 200, {
 			logins,
 			count,

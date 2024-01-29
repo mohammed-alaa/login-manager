@@ -63,10 +63,9 @@ const handle: ResponseHandler = async (res, response) => {
 	}
 
 	// Retrieve logins
-	const oldLogins = (await loginRepository.retrieveLogins<LoginItem>({
-		limit: null,
-		columns: ["website", "username", "password"],
-	})) as LoginItem[]
+	const oldLogins = await loginRepository
+		.columns(["website", "username", "password"])
+		.retrieveLogins<LoginItem[]>()
 
 	const newLogins = oldLogins.map((login) => {
 		let loginPassword = login.password
