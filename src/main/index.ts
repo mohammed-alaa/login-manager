@@ -147,8 +147,24 @@ const createMainWindow = async () => {
 		return { action: "deny" }
 	})
 
-	mainWindow.on("show", () => setTrayMenu())
-	mainWindow.on("hide", () => setTrayMenu())
+	mainWindow.on("show", () => setTrayMenu()).on("hide", () => setTrayMenu())
+	// Implement fullscreen shortcut for Windows and Linux (F11) and macOS (Cmd+Ctrl+F) without debouncing
+	mainWindow.webContents.on("before-input-event", (e, input) => {
+		if (input.type !== "keyUp") {
+			return
+		}
+
+		if (isWindows() && input.key === "F11") {
+			mainWindow?.setFullScreen(!mainWindow?.isFullScreen())
+		} else if (
+			isMac() &&
+			input.key === "F" &&
+			input.control &&
+			input.meta
+		) {
+			mainWindow?.setFullScreen(!mainWindow?.isFullScreen())
+		}
+	})
 }
 
 process.on("uncaughtException", (error) => {
