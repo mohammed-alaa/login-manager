@@ -1,0 +1,169 @@
+@import "@tabler/icons-webfont/tabler-icons.min.css"
+
+@tailwind base
+@tailwind components
+@tailwind utilities
+
+@layer base
+	h1
+		@apply font-bold
+		@apply text-2xl
+	h2
+		@apply font-bold
+		@apply text-xl
+	h3
+		@apply font-bold
+		@apply text-lg
+	button
+		-webkit-app-region: no-drag
+	ol, ul
+		@apply ps-4
+		@apply list-inside
+	ol
+		@apply list-decimal
+	ul
+		@apply list-disc
+
+html
+	@apply overflow-hidden
+
+body
+	@apply bg-body
+	font-family: 'Gantari', sans-serif
+
+.app-header,
+.search,
+.login-header,
+.login-body
+	@apply bg-main
+
+.login-view
+	grid-template-rows: theme('height.search-bar') auto
+	grid-template-columns: theme('width.login-list') auto
+	grid-template-areas: "search info" "list body"
+
+	.search
+		grid-area: search
+
+	.login-header
+		grid-area: info
+
+	.login-list
+		grid-area: list
+
+	.login-body-wrapper
+		grid-area: body
+
+.app-header
+	-webkit-app-region: drag !important
+	height: env(titlebar-area-height)
+	top: 0
+	@apply sticky
+	@apply border-b border-main
+	@apply ps-4 w-full z-20 flex items-center
+
+.main
+	--app-available-height: 100vh
+	--app-available-y: 0
+
+	&.appHeader
+		--app-available-height: calc(100vh - env(titlebar-area-height))
+		--app-available-y: env(titlebar-area-height)
+
+.top-safe-area
+	top: var(--app-available-y)
+
+.h-fullscreen
+	height: var(--app-available-height)
+
+.login-body
+	@apply overflow-y-auto
+	@apply rounded-lg
+	@apply border
+	@apply border-main
+
+	.website .head > i
+		color: #2196f3
+	.username .head > i
+		color: #47cc47
+	.password .head > i
+		color: #bf772d
+
+.settings
+	.settings-header
+		@apply h-settings-header-height
+	.settings-body
+		height: calc(var(--app-available-height) - theme('height.settings-header-height'))
+
+.btn
+	&.btn-primary
+		@apply border-btn-primary
+		&.btn-text
+			@apply border-transparent
+		&.btn-outlined, &.btn-text
+			@apply text-btn-primary-outlined
+		&.btn-filled, &.btn-outlined:not(:disabled):hover, &.btn-text:not(:disabled):hover
+			@apply text-btn-primary-filled bg-btn-primary
+	&.btn-danger
+		@apply border-btn-danger
+		&.btn-text
+			@apply border-transparent
+		&.btn-outlined, &.btn-text
+			@apply text-btn-danger-outlined
+		&.btn-filled, &.btn-outlined:not(:disabled):hover, &.btn-text:not(:disabled):hover
+			@apply text-btn-danger-filled bg-btn-danger
+	&.btn-secondary
+		@apply border-btn-secondary
+		&.btn-text
+			@apply border-transparent
+		&.btn-outlined, &.btn-text
+			@apply text-btn-secondary-outlined
+		&.btn-filled, &.btn-outlined:not(:disabled):hover, &.btn-text:not(:disabled):hover
+			@apply text-btn-secondary-filled bg-btn-secondary
+	&.btn-warning
+		@apply border-btn-warning
+		&.btn-text
+			@apply border-transparent
+		&.btn-outlined, &.btn-text
+			@apply text-btn-warning-outlined
+		&.btn-filled, &.btn-outlined:not(:disabled):hover, &.btn-text:not(:disabled):hover
+			@apply text-btn-warning-filled bg-btn-warning
+
+.ti
+	font-size: inherit
+	line-height: inherit
+
+.fade-enter-active, .fade-leave-active
+	@apply transition-opacity duration-500
+
+.fade-enter, .fade-leave-to
+	@apply opacity-0
+
+.swap-move, .swap-enter-active, .swap-leave-active
+	transition: all 200ms cubic-bezier(0.55, 0, 0.1, 1)
+
+.swap-enter-from, .swap-leave-to
+	@apply opacity-0
+	transform: scaleY(0)
+
+.swap-leave-active
+	z-index: -1
+	@apply absolute
+
+::-webkit-scrollbar
+	@apply w-2 h-2
+
+::-webkit-scrollbar-track
+	@apply rounded-lg transition bg-body/70
+
+	&:hover
+		@apply bg-body
+
+::-webkit-scrollbar-thumb
+	@apply rounded-lg transition bg-primary/70
+
+	&:hover
+		@apply bg-primary
+
+input::-webkit-inner-spin-button
+	@apply hidden
